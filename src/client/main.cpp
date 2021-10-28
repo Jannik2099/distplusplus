@@ -24,12 +24,12 @@ using distplusplus::common::ProcessHelper;
 using distplusplus::common::Tempfile;
 
 static int func(common::BoundsSpan<std::string_view> &argv) {
-	if (argv.size() == 1 && std::string(argv[0]) == "distplusplus") {
+	if (argv.size() == 1 && std::filesystem::path(argv[0]).stem() == "distplusplus") {
 		BOOST_LOG_TRIVIAL(error) << "distplusplus invoked without any arguments";
 		return 1;
 	}
 	const int compilerPos = (std::filesystem::path(argv[0]).stem() == "distplusplus") ? 1 : 0;
-	std::string compilerName(argv[compilerPos]);
+	std::string compilerName = std::filesystem::path(argv[compilerPos]).stem();
 	const std::string cwd = std::filesystem::current_path();
 
 	const distplusplus::CompilerType compilerType = distplusplus::common::mapCompiler(compilerName);
@@ -139,16 +139,16 @@ int main(int argc, char *argv[]) {
 		ret = func(argsSpan);
 	} catch (FallbackSignal) {
 		const int compilerPos = (std::filesystem::path(argsSpan[0]).stem() == "distplusplus") ? 1 : 0;
-		std::string compilerName(argsSpan[compilerPos]);
+		std::string compilerPath(argsSpan[compilerPos]);
 		std::vector<std::string> args;
 		for (const auto &arg : argsSpan.subspan(compilerPos + 1)) {
 			args.emplace_back(arg);
 		}
 
-		if (boost::process::search_path(compilerName).empty()) {
+		if(!std::filesystem::exists(compilerPath)) {
 			return -1;
 		}
-		ProcessHelper localInvocation(boost::process::search_path(compilerName), args);
+		ProcessHelper localInvocation(compilerPath, args);
 		std::cerr << localInvocation.get_stderr() << std::endl;
 		std::cout << localInvocation.get_stdout() << std::endl;
 		return localInvocation.returnCode();
