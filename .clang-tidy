@@ -1,0 +1,3 @@
+Checks: '-*, bugprone-*, cppcoreguidelines-*, misc-*, modernize-*, -modernize-use-trailing-return-type, performance-*, portability-*, readability-*, clang-*'
+HeaderFilterRegex: '.*\.hpp'
+FormatStyle: 'file'
