@@ -1,7 +1,6 @@
-#include "common/common.hpp"
-
 #undef NDEBUG
-#define NDEBUG 1
+
+#include "common/common.hpp"
 
 using namespace distplusplus::common;
 
