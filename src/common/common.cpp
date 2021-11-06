@@ -126,16 +126,6 @@ Tempfile::~Tempfile() {
 
 void Tempfile::disable_cleanup() { cleanup = false; }
 
-std::optional<const std::vector<std::string>::const_iterator> startsWithOutOf(const std::string &string,
-																			  const std::vector<std::string> &candidates) {
-	for (std::remove_reference<decltype(candidates)>::type::size_type i = 0; i < candidates.size(); i++) {
-		if (string.rfind(candidates[i], 0) == 0) {
-			return candidates.begin();
-		}
-	}
-	return std::nullopt;
-}
-
 distplusplus::CompilerType mapCompiler(const std::string &compiler) {
 	if (compiler.find("clang") != std::string::npos) {
 		BOOST_LOG_TRIVIAL(debug) << "detected compiler as clang";

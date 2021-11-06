@@ -139,9 +139,6 @@ public:
 	void disable_cleanup();
 };
 
-std::optional<const std::vector<std::string>::const_iterator> startsWithOutOf(const std::string &string,
-																			  const std::vector<std::string> &candidates);
-
 distplusplus::CompilerType mapCompiler(const std::string &compiler);
 
 const char *mapGRPCStatus(const grpc::StatusCode &status);
