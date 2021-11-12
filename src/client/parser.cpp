@@ -47,9 +47,9 @@ void Parser::readArgsFile(const path &argsFile) {
 	std::ifstream fileStream(argsFile);
 	std::vector<std::string> myArgs;
 	while (!fileStream.eof()) {
-		std::stringbuf arg;
-		fileStream.get(arg, ' ');
-		myArgs.push_back(arg.str());
+		std::string arg;
+		std::getline(fileStream, arg, ' ');
+		myArgs.push_back(arg);
 	}
 	// this ain't pretty
 	fileArgsVec.push_back(myArgs);
