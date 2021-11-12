@@ -65,7 +65,7 @@ void Parser::readArgsFile(const path &argsFile) {
 // every branch in the main loop MUST be elseif.
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void Parser::parseArgs(const BoundsSpan<std::string_view> &args) {
-	_args.reserve(args.size());
+	_args.reserve(args.size() + _args.size());
 	for (std::size_t i = 0; i < args.size(); i++) {
 		const std::string_view arg = args[i];
 		if (std::any_of(unseq, singleArgsNoDistribute.begin(), singleArgsNoDistribute.end(),
@@ -143,6 +143,10 @@ void Parser::parseArgs(const BoundsSpan<std::string_view> &args) {
 			_args.push_back(arg);
 		}
 	}
+}
+
+Parser::Parser(BoundsSpan<std::string_view> &args) {
+	parseArgs(args);
 	if (!_canDistribute.has_value()) {
 		_canDistribute = false;
 		// TODO: warn
@@ -166,8 +170,6 @@ void Parser::parseArgs(const BoundsSpan<std::string_view> &args) {
 		std::cout << ParserError(*this, "DEBUG").what() << std::endl;
 	}
 }
-
-Parser::Parser(BoundsSpan<std::string_view> &args) { parseArgs(args); }
 
 const std::filesystem::path &Parser::infile() const { return _infile; }
 
