@@ -13,4 +13,5 @@ endfunction()
 
 include_directories(".")
 add_subdirectory("common")
+add_subdirectory("client")
 add_custom_target(coverage COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/create_cov.sh" WORKING_DIRECTORY ${PROJECT_BINARY_DIR})

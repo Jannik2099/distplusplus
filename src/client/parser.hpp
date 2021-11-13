@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef TESTING_PRIVATE
+#define TESTING_PRIVATE_DISTPLUSPLUS_CLIENT_PARSER
+#undef TESTING_PRIVATE
+#endif
+
 #include <exception>
 #include <filesystem>
 #include <iterator>
@@ -10,6 +15,10 @@
 
 #include "common/common.hpp"
 #include "common/constants.hpp"
+
+#ifdef TESTING_PRIVATE_DISTPLUSPLUS_CLIENT_PARSER
+#define private public
+#endif
 
 using distplusplus::common::BoundsSpan;
 using distplusplus::common::Language;
