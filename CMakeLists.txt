@@ -40,11 +40,10 @@ include(CheckIncludeFileCXX)
 include(CTest)
 
 pkg_search_module(grpc REQUIRED IMPORTED_TARGET GLOBAL grpc++)
-pkg_search_module(protobuf REQUIRED IMPORTED_TARGET GLOBAL protobuf)
+pkg_search_module(protobuf REQUIRED IMPORTED_TARGET GLOBAL protobuf>=3.15)
 
 add_compile_definitions("BOOST_ALL_DYN_LINK=1")
 find_package(Boost REQUIRED COMPONENTS filesystem log)
-
 
 CHECK_INCLUDE_FILE_CXX("toml++/toml.h" HAVE_TOMLPLUSPLUS)
 if(NOT HAVE_TOMLPLUSPLUS)
