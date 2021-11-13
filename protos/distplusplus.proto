@@ -34,7 +34,7 @@ message CompileAnswer {
 	int32 returnCode = 1;
 	string stdout = 2;
 	string stderr = 3;
-	File outputFile = 4;
+	optional File outputFile = 4;
 }
 
 message ServerQuery {
@@ -51,7 +51,7 @@ message Reservation {}
 
 message ReservationAnswer {
 	bool success = 1;
-	string uuid = 2;
+	optional string uuid = 2;
 }
 service CompilationServer {
 	rpc Query(ServerQuery) returns (QueryAnswer) {}
