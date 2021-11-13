@@ -4,3 +4,6 @@
 [submodule "third_party/tomlplusplus"]
 	path = third_party/tomlplusplus
 	url = https://github.com/marzer/tomlplusplus.git
+[submodule "third_party/boost"]
+	path = third_party/boost
+	url = https://github.com/boostorg/boost.git
