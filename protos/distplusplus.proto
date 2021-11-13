@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package distplusplus;
+
+// gRPC only offer gzip and deflate, which are too slow for scaling out
+enum CompressionType {
+	NONE = 0;
+	lz4 = 1; // only frame format
+	zstd = 2; // only frame format
+}
+
+// This is not for the exact compiler binary (since then we'd need g++ and CTARGET-gcc), but for is_clang / is_gcc queries
+enum CompilerType {
+	UNKNOWN = 0;
+	clang = 1;
+	gcc = 2;
+}
+
+message File {
+	string name = 1; // needed for DW_AT_name - ALWAYS a basename
+	CompressionType compressionType = 2;
+	bytes content = 3;
+}
+
+message CompileRequest {
+	string uuid = 1;
+	string compiler = 2; // the compiler basename
+	File inputFile = 3;
+	string cwd = 4; // needed for DW_AT_comp_dir
+	repeated string argument = 5;
+}
+
+message CompileAnswer {
+	int32 returnCode = 1;
+	string stdout = 2;
+	string stderr = 3;
+	optional File outputFile = 4;
+}
+
+message ServerQuery {
+	string compiler = 1;
+}
+
+message QueryAnswer {
+	bool compilerSupported = 1;
+	repeated CompressionType supportedCompressionTypes = 2;
+	int32 maxJobs = 3;
+}
+
+message Reservation {}
+
+message ReservationAnswer {
+	bool success = 1;
+	optional string uuid = 2;
+}
+service CompilationServer {
+	rpc Query(ServerQuery) returns (QueryAnswer) {}
+	rpc Reserve(Reservation) returns (ReservationAnswer) {}
+	rpc Distribute(CompileRequest) returns (CompileAnswer) {}
+}
