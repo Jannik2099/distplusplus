@@ -8,6 +8,7 @@ endmacro()
 
 option(COVERAGE "build with coverage data" OFF)
 option(USE_DEFAULT_FLAGS "use default compiler flags" ON)
+option(SYSTEM_BOOST "use system boost" ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -38,12 +39,64 @@ endif()
 include(FindPkgConfig)
 include(CheckIncludeFileCXX)
 include(CTest)
+include(ExternalProject)
 
 pkg_search_module(grpc REQUIRED IMPORTED_TARGET GLOBAL grpc++)
 pkg_search_module(protobuf REQUIRED IMPORTED_TARGET GLOBAL protobuf>=3.15)
 
-add_compile_definitions("BOOST_ALL_DYN_LINK=1")
-find_package(Boost REQUIRED COMPONENTS filesystem log)
+if(SYSTEM_BOOST)
+	add_compile_definitions("BOOST_ALL_DYN_LINK=1")
+	find_package(Boost REQUIRED COMPONENTS filesystem log)
+	add_custom_target(Boost)
+else()
+	add_custom_target(Boost_Build
+		COMMAND
+			${CMAKE_CURRENT_SOURCE_DIR}/third_party/boost/tools/build/src/engine/build.sh
+	)
+	add_custom_target(Boost_Build_Cleanup
+		BYPRODUCTS
+			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost-build/b2
+		DEPENDS
+			Boost_Build
+		COMMAND
+			mv
+			${CMAKE_CURRENT_SOURCE_DIR}/third_party/boost/tools/build/src/engine/b2 ${CMAKE_CURRENT_BINARY_DIR}/third_party/boost-build/b2
+		COMMAND
+			rm ${CMAKE_CURRENT_SOURCE_DIR}/third_party/boost/tools/build/src/engine/bjam
+	)
+	add_custom_target(Boost
+		DEPENDS
+			Boost_Build_Cleanup
+		BYPRODUCTS
+			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_log.a
+			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_log_setup.a
+			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_thread.a
+			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_filesystem.a
+		COMMAND
+		${CMAKE_CURRENT_BINARY_DIR}/third_party/boost-build/b2 --prefix=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install --with-log --with-filesystem --stagedir=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/stage link=static threading=multi
+		COMMAND
+			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost-build/b2 --prefix=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install --with-log --with-filesystem --stagedir=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/stage link=static threading=multi install
+		WORKING_DIRECTORY
+			${CMAKE_CURRENT_SOURCE_DIR}/third_party/boost
+	)
+	include_directories(BEFORE SYSTEM ${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/include)
+
+	add_library(boost_log STATIC IMPORTED)
+	add_library(boost_log_setup STATIC IMPORTED)
+	set_property(TARGET boost_log_setup PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_log_setup.a)
+	add_library(boost_thread STATIC IMPORTED)
+	set_property(TARGET boost_thread PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_thread.a)
+	target_link_libraries(boost_log INTERFACE boost_log_setup boost_thread -lpthread)
+
+	add_library(Boost::log ALIAS boost_log)
+	set_property(TARGET boost_log PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_log.a)
+	add_dependencies(boost_log Boost)
+
+	add_library(boost_filesystem STATIC IMPORTED)
+	add_library(Boost::filesystem ALIAS boost_filesystem)
+	set_property(TARGET boost_filesystem PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_filesystem.a)
+	add_dependencies(boost_filesystem Boost)
+endif()
 
 CHECK_INCLUDE_FILE_CXX("toml++/toml.h" HAVE_TOMLPLUSPLUS)
 if(NOT HAVE_TOMLPLUSPLUS)
