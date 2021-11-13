@@ -8,6 +8,7 @@ function(add_simple_test name libraries)
 	add_test(NAME "${name}" COMMAND "${name}")
 	if(COVERAGE)
 		set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT LLVM_PROFILE_FILE=${name}.profraw)
+		set_property(TARGET "${name}" PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE:${name}>.profraw")
 	endif()
 endfunction()
 
@@ -15,3 +16,5 @@ include_directories(".")
 add_subdirectory("common")
 add_subdirectory("client")
 add_custom_target(coverage COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/create_cov.sh" WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+set_property(TARGET coverage PROPERTY ADDITIONAL_CLEAN_FILES
+	"${PROJECT_BINARY_DIR}/coverage.txt,${PROJECT_BINARY_DIR}/coverage.html,${PROJECT_BINARY_DIR}/coverage.profdata")
