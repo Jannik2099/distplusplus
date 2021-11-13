@@ -1,18 +1,22 @@
 name: tidy, test, coverage
 on: [push, pull_request]
 jobs:
-  tidy:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/install-deps
-      - run: mkdir build
-      - run: cmake -B build -DCMAKE_C_COMPILER=clang-13 -DCMAKE_CXX_COMPILER=clang++-13 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -GNinja
-      - run: find src -name '*.cpp' | xargs clang-tidy-13 -p build
+#  tidy:
+#    runs-on: ubuntu-20.04
+#    steps:
+#      - uses: actions/checkout@v2
+#        with:
+#          submodules: 'recursive'
+#      - uses: ./.github/actions/install-deps
+#      - run: mkdir build
+#      - run: cmake -B build -DCMAKE_C_COMPILER=clang-13 -DCMAKE_CXX_COMPILER=clang++-13 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -GNinja
+#      - run: find src -name '*.cpp' | xargs clang-tidy-13 -p build
   test-with-cov:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
       - uses: ./.github/actions/install-deps
       - run: mkdir build
       - run: cmake -B build -DCMAKE_C_COMPILER=clang-13 -DCMAKE_CXX_COMPILER=clang++-13 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCOVERAGE=TRUE -GNinja
