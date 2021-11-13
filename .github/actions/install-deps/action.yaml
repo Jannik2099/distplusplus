@@ -1,0 +1,21 @@
+name: install-deps
+
+on:
+  workflow_call:
+    outputs:
+      llvm_version:
+        value: "13"
+
+runs:
+  using: "composite"
+  steps:
+    - run: sudo apt-get update
+      shell: bash
+    - run: sudo apt-get install -y wget software-properties-common gnupg
+      shell: bash
+    - run: wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+      shell: bash
+    - run: sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main"
+      shell: bash
+    - run: sudo apt-get install -y clang-13 clang-tidy-13 lld-13 cmake ninja-build libboost-all-dev pkg-config libgrpc++ protobuf-compiler-grpc
+      shell: bash
