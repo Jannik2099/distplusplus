@@ -19,7 +19,7 @@ jobs:
           submodules: 'recursive'
       - uses: ./.github/actions/install-deps
       - run: mkdir build
-      - run: cmake -B build -DCMAKE_C_COMPILER=clang-13 -DCMAKE_CXX_COMPILER=clang++-13 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCOVERAGE=TRUE -GNinja
+      - run: cmake -B build -DCMAKE_C_COMPILER=clang-13 -DCMAKE_CXX_COMPILER=clang++-13 -DSYSTEM_BOOST=FALSE -DSYSTEM_GRPC=FALSE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCOVERAGE=TRUE -GNinja
       - name: build
         run: ninja
         working-directory: ./build
@@ -33,6 +33,7 @@ jobs:
         with:
           name: coverage
           path: |
-            build/coverage.txt build/coverage.txt
+            build/coverage.txt
+            build/coverage.html
 
         
