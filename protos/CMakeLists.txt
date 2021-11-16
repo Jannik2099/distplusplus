@@ -1,22 +1,24 @@
 set(PROTODIR "${CMAKE_CURRENT_SOURCE_DIR}")
-find_program(GRPC_CPP_PLUGIN grpc_cpp_plugin REQUIRED)
 
-message(STATUS "regenerating protobuf files")
+add_custom_target(gen-protos
+	COMMAND
+		${protoc} --grpc_out ${PROTODIR} --proto_path "${PROTODIR}" --plugin=protoc-gen-grpc=${grpc_cpp_plugin} ${PROTODIR}/distplusplus.proto
+	COMMAND
+		${protoc} --cpp_out ${PROTODIR} --proto_path "${PROTODIR}" ${PROTODIR}/distplusplus.proto
+	DEPENDS
+		protoc_ready
+	BYPRODUCTS
+		${PROTODIR}/distplusplus.pb.cc
+		${PROTODIR}/distplusplus.pb.h
+		${PROTODIR}/distplusplus.grpc.pb.cc
+		${PROTODIR}/distplusplus.grpc.pb.h
+)
+add_library(protos-protobuf OBJECT "${PROTODIR}/distplusplus.pb.cc")
+add_library(distplusplus::protobuf ALIAS protos-protobuf)
+target_link_libraries(protos-protobuf PkgConfig::protobuf)
+obj_propagate_targets(protos-protobuf)
 
-execute_process(COMMAND rm -f distplusplus.grpc.pb.cc distplusplus.grpc.pb.h distplusplus.pb.cc distplusplus.pb.h)
-
-execute_process(
-	COMMAND protoc
-	--grpc_out ${PROTODIR} --proto_path "${PROTODIR}" --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN} ${PROTODIR}/distplusplus.proto)
-execute_process(
-	COMMAND protoc
-	--cpp_out ${PROTODIR} --proto_path "${PROTODIR}" ${PROTODIR}/distplusplus.proto)
-add_library(protobuf OBJECT "${PROTODIR}/distplusplus.pb.cc")
-add_library(distplusplus::protobuf ALIAS protobuf)
-target_link_libraries(protobuf PkgConfig::protobuf)
-obj_propagate_targets(protobuf)
-
-add_library(grpc OBJECT "${PROTODIR}/distplusplus.grpc.pb.cc")
-add_library(distplusplus::grpc ALIAS grpc)
-target_link_libraries(grpc PkgConfig::grpc)
-obj_propagate_targets(grpc)
+add_library(protos-grpc OBJECT "${PROTODIR}/distplusplus.grpc.pb.cc")
+add_library(distplusplus::grpc ALIAS protos-grpc)
+target_link_libraries(protos-grpc PkgConfig::grpc++)
+obj_propagate_targets(protos-grpc)
