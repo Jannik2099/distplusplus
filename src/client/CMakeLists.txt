@@ -17,4 +17,4 @@ obj_propagate_targets(client)
 
 target_link_libraries(distplusplus distplusplus::client::client distplusplus::client::parser distplusplus::client::config distplusplus::common distplusplus::common distplusplus::protobuf distplusplus::grpc Boost::log -ltbb)
 
-install(TARGETS distplusplus DESTINATION bin)
+install(TARGETS distplusplus RUNTIME)
