@@ -18,14 +18,11 @@ jobs:
         with:
           submodules: 'recursive'
       - uses: ./.github/actions/install-deps
-      - uses: actions/cache@v2
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
         with:
-          path: ~/.ccache
-          key: "mycache"
-      - name: set up ccache
-        run: |
-          mkdir -p ~/.ccache
-          cp .github/workflows/ccache.conf ~/.ccache/ccache.conf
+          key: ${{ matrix.os }}
+          max-size: 3G
       - name: configure
         run: |
           mkdir build
