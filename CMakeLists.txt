@@ -256,11 +256,16 @@ macro(get_all_targets_recursive targets dir)
 
 	get_property(current_targets DIRECTORY ${dir} PROPERTY BUILDSYSTEM_TARGETS)
 	list(APPEND ${targets} ${current_targets})
+	# I'm not exactly happy with this
+	list(FILTER ${targets} EXCLUDE REGEX test)
+	list(FILTER ${targets} EXCLUDE REGEX coverage)
+	list(FILTER ${targets} EXCLUDE REGEX install)
 endmacro()
 
 get_all_targets_recursive(src_targets src/common)
 get_all_targets_recursive(src_targets src/client)
 get_all_targets_recursive(src_targets src/server)
+get_all_targets_recursive(src_targets protos)
 
 if(BUILD_TESTING)
 	add_subdirectory("test")
