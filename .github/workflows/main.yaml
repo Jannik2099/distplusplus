@@ -29,7 +29,7 @@ jobs:
       - name: configure
         run: |
           mkdir build
-          cmake -B build -DCMAKE_C_COMPILER=/usr/lib/ccache/clang-13 -DCMAKE_CXX_COMPILER=/usr/lib/ccache/clang++-13 -DSYSTEM_BOOST=FALSE -DSYSTEM_GRPC=FALSE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCOVERAGE=TRUE -GNinja
+          cmake -B build -DCMAKE_C_COMPILER=/usr/lib/ccache/clang-13 -DCMAKE_CXX_COMPILER=/usr/lib/ccache/clang++-13 -DSYSTEM_BOOST=FALSE -DSYSTEM_GRPC=FALSE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCOVERAGE=TRUE -DLLVM_PROFDATA=llvm-profdata-13 -DLLVM_COV=llvm-cov-13 -GNinja
       - name: build
         run: ninja
         working-directory: ./build
