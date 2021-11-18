@@ -2,8 +2,8 @@
 #include "common/common.hpp"
 #include "fallback.hpp"
 #include "parser.hpp"
-#include "protos/distplusplus.grpc.pb.h"
-#include "protos/distplusplus.pb.h"
+#include "distplusplus.grpc.pb.h"
+#include "distplusplus.pb.h"
 #include <boost/log/trivial.hpp>
 #include <boost/process.hpp>
 #include <filesystem>

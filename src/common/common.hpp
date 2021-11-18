@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-#include "protos/distplusplus.pb.h"
+#include "distplusplus.pb.h"
 
 using std::filesystem::path;
 

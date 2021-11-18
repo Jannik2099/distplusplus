@@ -14,8 +14,8 @@
 #include <vector>
 
 #include "common/common.hpp"
-#include "protos/distplusplus.grpc.pb.h"
-#include "protos/distplusplus.pb.h"
+#include "distplusplus.grpc.pb.h"
+#include "distplusplus.pb.h"
 
 namespace distplusplus::server {
 

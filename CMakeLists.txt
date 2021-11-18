@@ -242,7 +242,7 @@ endif()
 add_compile_definitions("DISTPLUSPLUS_BUILD_TARGET=${DISTPLUSPLUS_BUILD_TARGET}")
 
 include_directories("src")
-include_directories(".")
+include_directories(${CMAKE_BINARY_DIR}/protos)
 add_subdirectory("protos")
 add_subdirectory("src/common")
 add_subdirectory("src/client")

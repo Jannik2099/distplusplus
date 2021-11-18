@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "protos/distplusplus.grpc.pb.h"
-#include "protos/distplusplus.pb.h"
+#include "distplusplus.grpc.pb.h"
+#include "distplusplus.pb.h"
 #include <grpcpp/create_channel.h>
 #include <grpcpp/security/credentials.h>
 
