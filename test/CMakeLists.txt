@@ -8,7 +8,7 @@ function(add_simple_test name libraries)
 	add_test(NAME "${name}" COMMAND "${name}")
 	if(COVERAGE)
 		set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT LLVM_PROFILE_FILE=${name}.profraw)
-		set_property(TARGET "${name}" PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE:${name}>.profraw")
+		set_property(TEST "${name}" PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE:${name}>.profraw")
 	endif()
 endfunction()
 
