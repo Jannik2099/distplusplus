@@ -2,11 +2,11 @@
 #include "server/parser.hpp"
 
 #include <algorithm>
+#include <iostream>
 #include <list>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <iostream>
 
 using namespace distplusplus::server::parser;
 using distplusplus::common::multiArgsCPP;
