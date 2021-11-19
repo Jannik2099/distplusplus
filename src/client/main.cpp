@@ -1,9 +1,9 @@
 #include "client.hpp"
 #include "common/common.hpp"
-#include "fallback.hpp"
-#include "parser.hpp"
 #include "distplusplus.grpc.pb.h"
 #include "distplusplus.pb.h"
+#include "fallback.hpp"
+#include "parser.hpp"
 #include <boost/log/trivial.hpp>
 #include <boost/process.hpp>
 #include <filesystem>
@@ -142,12 +142,12 @@ int main(int argc, char *argv[]) {
 		std::string compilerPath(argsSpan[compilerPos]);
 		// otherwise we would recurse on ourself
 		// TODO: the conversion to path & c_str is kinda hacky, should probably fix it at some point
-		if(compilerPos == 0) {
-			if(compilerPath.starts_with("/usr/libexec/distplusplus") || compilerPath.starts_with("/usr/lib/distcc")) {
+		if (compilerPos == 0) {
+			if (compilerPath.starts_with("/usr/libexec/distplusplus") || compilerPath.starts_with("/usr/lib/distcc")) {
 				compilerPath = boost::process::search_path(std::filesystem::path(compilerPath).stem().c_str()).c_str();
 			}
 		}
-		if(std::filesystem::path(compilerPath).stem() == compilerPath) {
+		if (std::filesystem::path(compilerPath).stem() == compilerPath) {
 			compilerPath = boost::process::search_path(std::filesystem::path(compilerPath).stem().c_str()).c_str();
 		}
 		std::vector<std::string> args;
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
 			args.emplace_back(arg);
 		}
 
-		if(!std::filesystem::exists(compilerPath)) {
+		if (!std::filesystem::exists(compilerPath)) {
 			BOOST_LOG_TRIVIAL(error) << "specified compiler " << argsSpan[compilerPos] << " not found";
 			return -1;
 		}

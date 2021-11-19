@@ -98,7 +98,7 @@ void Parser::parseArgs(const BoundsSpan<std::string_view> &args) {
 			_outfile = args[i];
 		} else if (arg == "-c" || arg == "-S") {
 			_args.push_back(arg);
-			if(!_canDistribute.has_value()) {
+			if (!_canDistribute.has_value()) {
 				_canDistribute = true;
 			}
 		} else if (arg == "-x") {
