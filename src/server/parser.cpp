@@ -17,6 +17,18 @@ std::vector<std::string_view> Parser::parse(const std::vector<std::string_view> 
 	myargs.reserve(args.size());
 	bool canDistribute = false;
 	for (std::remove_reference<decltype(args)>::type::size_type i = 0; i < args.size(); i++) {
+		if (std::any_of(unseq, singleArgsNoDistribute.begin(), singleArgsNoDistribute.end(),
+						[&](const auto &arg) { return args[i] == arg; })) {
+			throw CannotProcessSignal("encountered non-distributable argument " + std::string(args[i]));
+		}
+		if (std::any_of(unseq, singleArgsNoDistributeStartsWith.begin(), singleArgsNoDistributeStartsWith.end(),
+						[&](const auto &arg) { return args[i].starts_with(arg); })) {
+			throw CannotProcessSignal("encountered non-distributable argument " + std::string(args[i]));
+		}
+		if (std::any_of(unseq, multiArgsNoDistribute.begin(), multiArgsNoDistribute.end(),
+						[&](const auto &arg) { return args[i] == arg; })) {
+			throw CannotProcessSignal("encountered non-distributable argument " + std::string(args[i]));
+		}
 		// filter out cpp flags
 		if (std::any_of(unseq, singleArgsCPP.begin(), singleArgsCPP.end(), [&](const auto &arg) { return args[i] == arg; })) {
 			BOOST_LOG_TRIVIAL(trace) << "filtered preprocessor argument " << args[i];
@@ -34,18 +46,6 @@ std::vector<std::string_view> Parser::parse(const std::vector<std::string_view> 
 			BOOST_LOG_TRIVIAL(trace) << "filtered preprocessor argument " << args[i] << " " << args[i + 1];
 			i++;
 			continue;
-		}
-		if (std::any_of(unseq, singleArgsNoDistribute.begin(), singleArgsNoDistribute.end(),
-						[&](const auto &arg) { return args[i] == arg; })) {
-			throw CannotProcessSignal("encountered non-distributable argument " + std::string(args[i]));
-		}
-		if (std::any_of(unseq, singleArgsNoDistributeStartsWith.begin(), singleArgsNoDistributeStartsWith.end(),
-						[&](const auto &arg) { return args[i].starts_with(arg); })) {
-			throw CannotProcessSignal("encountered non-distributable argument " + std::string(args[i]));
-		}
-		if (std::any_of(unseq, multiArgsNoDistribute.begin(), multiArgsNoDistribute.end(),
-						[&](const auto &arg) { return args[i] == arg; })) {
-			throw CannotProcessSignal("encountered non-distributable argument " + std::string(args[i]));
 		}
 		if (args[i] == "-c") {
 			canDistribute = true;
