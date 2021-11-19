@@ -234,7 +234,7 @@ if(NOT HAVE_TOMLPLUSPLUS)
 endif()
 
 execute_process(
-	COMMAND bash -c "LANG=en ${CMAKE_CXX_COMPILER} -v 2> >(grep Target | cut -d ' ' -f 2)"
+	COMMAND bash -c "LANG=en ${CMAKE_CXX_COMPILER} -v 2> >(grep Target | cut -d ' ' -f 2 | xargs echo -n)"
 	OUTPUT_VARIABLE DISTPLUSPLUS_BUILD_TARGET)
 if(NOT DISTPLUSPLUS_BUILD_TARGET)
 	message(FATAL_ERROR "could not determine build target from $CXX -v")
