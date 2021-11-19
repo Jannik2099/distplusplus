@@ -140,6 +140,12 @@ int main(int argc, char *argv[]) {
 	} catch (FallbackSignal) {
 		const int compilerPos = (std::filesystem::path(argsSpan[0]).stem() == "distplusplus") ? 1 : 0;
 		std::string compilerPath(argsSpan[compilerPos]);
+		// otherwise we would recurse on ourself
+		if(compilerPos == 0) {
+			if(compilerPath.starts_with("/usr/libexec/distplusplus") || compilerPath.starts_with("/usr/lib/distcc")) {
+				compilerPath = boost::process::search_path(std::filesystem::path(compilerPath).stem().c_str()).c_str();
+			}
+		}
 		std::vector<std::string> args;
 		for (const auto &arg : argsSpan.subspan(compilerPos + 1)) {
 			args.emplace_back(arg);
