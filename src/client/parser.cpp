@@ -96,12 +96,11 @@ void Parser::parseArgs(const BoundsSpan<std::string_view> &args) {
 			}
 			i++;
 			_outfile = args[i];
-		} else if (arg == "-c") {
+		} else if (arg == "-c" || arg == "-S") {
 			_args.push_back(arg);
-			_canDistribute = true;
-		} else if (arg == "-S") {
-			_args.push_back(arg);
-			_canDistribute = true;
+			if(!_canDistribute.has_value()) {
+				_canDistribute = true;
+			}
 		} else if (arg == "-x") {
 			if (i + 1 == args.size()) {
 				throw ParserError(*this, "multi-arg -x is the last argument");
@@ -149,12 +148,11 @@ Parser::Parser(BoundsSpan<std::string_view> &args) {
 	parseArgs(args);
 	if (!_canDistribute.has_value()) {
 		_canDistribute = false;
-		// TODO: warn
 	}
 	if (!_infile.empty() && _infile.filename() == "conftest.c") {
 		_canDistribute = false;
 	}
-	if (_canDistribute.has_value() && canDistribute() == false) {
+	if (!_canDistribute.value()) {
 		return;
 	}
 	if (_infile.empty()) {
@@ -165,9 +163,6 @@ Parser::Parser(BoundsSpan<std::string_view> &args) {
 	}
 	if (_language == Language::NONE) {
 		throw ParserError(*this, "internal error: failed to determine language");
-	}
-	if (getenv("DISTPLUSPLUS_DEBUG") != nullptr) {
-		std::cout << ParserError(*this, "DEBUG").what() << std::endl;
 	}
 }
 
