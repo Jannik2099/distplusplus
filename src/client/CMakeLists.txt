@@ -9,6 +9,7 @@ obj_propagate_targets(parser-client)
 add_library(config-client OBJECT "config.cpp")
 add_library(distplusplus::client::config ALIAS config-client)
 target_link_libraries(config-client Boost::log)
+obj_propagate_targets(config-client)
 
 add_library(client OBJECT "client.cpp")
 add_library(distplusplus::client::client ALIAS client)
