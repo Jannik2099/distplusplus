@@ -1,10 +1,10 @@
 #include "common/common.hpp"
 #include "util.hpp"
-#include <string>
-#include <iostream>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <sstream>
+#include <string>
 
 using namespace distplusplus::common;
 
@@ -18,10 +18,9 @@ int main() {
 	stringStream << fileStream.rdbuf();
 	fileStream.close();
 
-	if(stringStream.str() != content) {
+	if (stringStream.str() != content) {
 		std::cout << "file content " << stringStream.str() << " did not match " << content << std::endl;
 		return 1;
 	}
 	return 0;
 }
-

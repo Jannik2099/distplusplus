@@ -1,8 +1,8 @@
 #include "common/common.hpp"
 #include "util.hpp"
-#include <string>
-#include <iostream>
 #include <filesystem>
+#include <iostream>
+#include <string>
 
 using namespace distplusplus::common;
 
@@ -14,7 +14,7 @@ int main() {
 		tempfile.disable_cleanup();
 		filename = tempfile;
 	}
-	if(!std::filesystem::exists(filename)) {
+	if (!std::filesystem::exists(filename)) {
 		std::cout << "file " << filename << " does not exist" << std::endl;
 		return 1;
 	}

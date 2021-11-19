@@ -1,7 +1,7 @@
 #include "common/common.hpp"
 #include <boost/process.hpp>
-#include <vector>
 #include <string>
+#include <vector>
 
 using namespace distplusplus::common;
 

@@ -8,9 +8,8 @@ int main() {
 		ScopeGuard scopeGuard([&control]() { control = true; });
 		scopeGuard.defuse();
 	}
-	if(control) {
+	if (control) {
 		return 1;
 	}
 	return 0;
 }
-

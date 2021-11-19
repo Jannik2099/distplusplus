@@ -7,7 +7,7 @@ int main() {
 	{
 		ScopeGuard scopeGuard([&control]() { control = true; });
 	}
-	if(control) {
+	if (control) {
 		return 0;
 	}
 	return 1;

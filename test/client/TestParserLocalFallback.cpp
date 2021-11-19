@@ -1,5 +1,5 @@
-#include "client/parser.hpp"
 #include "client/fallback.hpp"
+#include "client/parser.hpp"
 #include "common/common.hpp"
 #include "common/constants.hpp"
 #include <iostream>
@@ -13,7 +13,7 @@ using distplusplus::client::FallbackSignal;
 
 int main() {
 	bool success = true;
-	for(const auto &arg : singleArgsNoDistribute) {
+	for (const auto &arg : singleArgsNoDistribute) {
 		bool caught = false;
 		std::list<std::string> argsList;
 		Tempfile infile("test.c");
@@ -31,15 +31,15 @@ int main() {
 		BoundsSpan argsSpan(argsViewVec.begin(), argsViewVec.end());
 		try {
 			Parser parser(argsSpan);
-		} catch (FallbackSignal&) {
+		} catch (FallbackSignal &) {
 			caught = true;
 		}
-		if(!caught) {
+		if (!caught) {
 			success = false;
 			std::cout << "bad argument " << arg << " didn't throw FallbackSignal" << std::endl;
 		}
 	}
-	for(const auto &arg : singleArgsNoDistributeStartsWith) {
+	for (const auto &arg : singleArgsNoDistributeStartsWith) {
 		bool caught = false;
 		std::list<std::string> argsList;
 		Tempfile infile("test.c");
@@ -57,15 +57,15 @@ int main() {
 		BoundsSpan argsSpan(argsViewVec.begin(), argsViewVec.end());
 		try {
 			Parser parser(argsSpan);
-		} catch (FallbackSignal&) {
+		} catch (FallbackSignal &) {
 			caught = true;
 		}
-		if(!caught) {
+		if (!caught) {
 			success = false;
 			std::cout << "bad argument " << arg << " didn't throw FallbackSignal" << std::endl;
 		}
 	}
-	for(const auto &arg : multiArgsNoDistribute) {
+	for (const auto &arg : multiArgsNoDistribute) {
 		bool caught = false;
 		std::list<std::string> argsList;
 		Tempfile infile("test.c");
@@ -84,15 +84,15 @@ int main() {
 		BoundsSpan argsSpan(argsViewVec.begin(), argsViewVec.end());
 		try {
 			Parser parser(argsSpan);
-		} catch (FallbackSignal&) {
+		} catch (FallbackSignal &) {
 			caught = true;
 		}
-		if(!caught) {
+		if (!caught) {
 			success = false;
 			std::cout << "bad argument " << arg << " didn't throw FallbackSignal" << std::endl;
 		}
 	}
-	if(!success) {
+	if (!success) {
 		return 1;
 	}
 }

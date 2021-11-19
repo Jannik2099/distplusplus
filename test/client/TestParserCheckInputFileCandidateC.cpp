@@ -32,7 +32,7 @@ int main() {
 			std::cout << "input file extension " << extension << " was recognized as " << parser._language << std::endl;
 		}
 	}
-	if(!success) {
+	if (!success) {
 		return 1;
 	}
 }

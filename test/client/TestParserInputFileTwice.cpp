@@ -25,7 +25,7 @@ int main() {
 	distplusplus::common::BoundsSpan argsSpan(argsViewVec.begin(), argsViewVec.end());
 	try {
 		Parser parser(argsSpan);
-	} catch (ParserError&) {
+	} catch (ParserError &) {
 		return 0;
 	}
 	return 1;

@@ -1,9 +1,9 @@
 #include "client/parser.hpp"
 #include "common/common.hpp"
+#include <iostream>
 #include <list>
 #include <string>
 #include <vector>
-#include <iostream>
 
 using namespace distplusplus::client::parser;
 
@@ -17,12 +17,12 @@ int main() {
 	argsList.push_back("-o");
 	argsList.push_back(outfile);
 	std::vector<std::string_view> argsViewVec;
-	for(const std::string &arg : argsList) {
+	for (const std::string &arg : argsList) {
 		argsViewVec.push_back(arg);
 	}
 	distplusplus::common::BoundsSpan argsSpan(argsViewVec.begin(), argsViewVec.end());
 	Parser parser(argsSpan);
-	if(parser.infile() != infile) {
+	if (parser.infile() != infile) {
 		std::cout << "parsed infile " << parser.infile() << " didn't match specified " << infile;
 		return 1;
 	}

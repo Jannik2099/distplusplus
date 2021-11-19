@@ -21,7 +21,7 @@ int main() {
 	}
 	distplusplus::common::BoundsSpan argsSpan(argsViewVec.begin(), argsViewVec.end());
 	Parser parser(argsSpan);
-	if(parser.infile() != infile) {
+	if (parser.infile() != infile) {
 		return 1;
 	}
 }
