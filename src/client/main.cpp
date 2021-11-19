@@ -26,7 +26,7 @@ using distplusplus::common::Tempfile;
 static int func(common::BoundsSpan<std::string_view> &argv) {
 	if (argv.size() == 1 && std::filesystem::path(argv[0]).stem() == "distplusplus") {
 		BOOST_LOG_TRIVIAL(error) << "distplusplus invoked without any arguments";
-		return 1;
+		return -1;
 	}
 	const int compilerPos = (std::filesystem::path(argv[0]).stem() == "distplusplus") ? 1 : 0;
 	std::string compilerName = std::filesystem::path(argv[compilerPos]).stem();
@@ -156,6 +156,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		if(!std::filesystem::exists(compilerPath)) {
+			BOOST_LOG_TRIVIAL(error) << "specified compiler " << argsSpan[compilerPos] << " not found";
 			return -1;
 		}
 		ProcessHelper localInvocation(compilerPath, args);
