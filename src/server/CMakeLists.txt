@@ -3,7 +3,7 @@ add_executable(distplusplus::server::distplusplus-server ALIAS distplusplus-serv
 
 add_library(parser-server OBJECT "parser.cpp")
 add_library(distplusplus::server::parser ALIAS parser-server)
-target_link_libraries(parser-server Boost::log)
+target_link_libraries(parser-server Boost::log -ltbb)
 obj_propagate_targets(parser-server)
 
 add_library(server OBJECT "server.cpp")

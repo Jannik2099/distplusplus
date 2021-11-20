@@ -3,7 +3,7 @@ add_executable(distplusplus::client::distplusplus ALIAS distplusplus)
 
 add_library(parser-client OBJECT "parser.cpp")
 add_library(distplusplus::client::parser ALIAS parser-client)
-target_link_libraries(parser-client distplusplus::common)
+target_link_libraries(parser-client distplusplus::common -ltbb)
 obj_propagate_targets(parser-client)
 
 add_library(config-client OBJECT "config.cpp")
