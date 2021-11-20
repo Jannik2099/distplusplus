@@ -21,5 +21,5 @@ if(COVERAGE)
 	set(LLVM_COV "llvm-cov" CACHE STRING "path to llvm-cov")
 	add_custom_target(coverage COMMAND env LLVM_PROFDATA=${LLVM_PROFDATA} LLVM_COV=${LLVM_COV} ${CMAKE_CURRENT_SOURCE_DIR}/create_cov.sh WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 	set_property(TARGET coverage PROPERTY ADDITIONAL_CLEAN_FILES
-		"${PROJECT_BINARY_DIR}/coverage.txt,${PROJECT_BINARY_DIR}/coverage.html,${PROJECT_BINARY_DIR}/coverage.profdata")
+		"${PROJECT_BINARY_DIR}/coverage.txt,${PROJECT_BINARY_DIR}/coverage.html,${PROJECT_BINARY_DIR}/coverage-lcov.txt,${PROJECT_BINARY_DIR}/coverage.profdata")
 endif()

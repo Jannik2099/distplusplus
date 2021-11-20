@@ -18,4 +18,4 @@ mapfile -t profraws < <(find . -name '*.profraw')
 ${LLVM_PROFDATA} merge -sparse "${profraws[@]}" -o coverage.profdata
 ${LLVM_COV} report --ignore-filename-regex='(third_party\/.*|protos\/.*)' -instr-profile coverage.profdata "${objs[@]}" > coverage.txt
 ${LLVM_COV} show --format=html --ignore-filename-regex='(third_party\/.*|protos\/.*)' -instr-profile coverage.profdata "${objs[@]}" > coverage.html
-${LLVM_COV} export -format text --ignore-filename-regex='(third_party\/.*|protos\/.*)' -instr-profile coverage.profdata "${objs[@]}" > coverage.json
+${LLVM_COV} export -format lcov --ignore-filename-regex='(third_party\/.*|protos\/.*)' -instr-profile coverage.profdata "${objs[@]}" > coverage-lcov.txt

@@ -39,7 +39,7 @@ jobs:
       - name: codecov
         uses: codecov/codecov-action@v2
         with:
-          files: build/coverage.json
+          files: build/coverage-lcov.txt
       - uses: actions/upload-artifact@v2
         with:
           name: coverage
