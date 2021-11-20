@@ -36,11 +36,14 @@ jobs:
       - name: coverage
         run: ninja coverage
         working-directory: ./build
+      - name: codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files: build/coverage.json
       - uses: actions/upload-artifact@v2
         with:
           name: coverage
           path: |
             build/coverage.txt
             build/coverage.html
-
-        
+            build/coverage.json
