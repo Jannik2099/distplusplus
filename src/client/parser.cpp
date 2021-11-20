@@ -19,8 +19,8 @@ using namespace distplusplus::common;
 
 namespace distplusplus::client::parser {
 
-static std::list<std::vector<std::string>> fileArgsVec;
-static std::vector<std::vector<std::string_view>> fileArgsViewVec;
+static std::list<std::vector<std::string>> fileArgsVec;			   // NOLINT cppcoreguidelines-avoid-non-const-global-variables
+static std::vector<std::vector<std::string_view>> fileArgsViewVec; // NOLINT cppcoreguidelines-avoid-non-const-global-variables
 
 void Parser::checkInputFileCandidate(const std::string_view &file) {
 	const path filePath(file);
@@ -43,7 +43,7 @@ void Parser::checkInputFileCandidate(const std::string_view &file) {
 	}
 }
 
-void Parser::readArgsFile(const path &argsFile) {
+void Parser::readArgsFile(const path &argsFile) { // NOLINT misc-no-recursion
 	std::ifstream fileStream(argsFile);
 	std::vector<std::string> myArgs;
 	while (!fileStream.eof()) {
@@ -64,7 +64,7 @@ void Parser::readArgsFile(const path &argsFile) {
 // This function is genuine hell and I do not know how to make it better
 // every branch in the main loop MUST be elseif.
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-void Parser::parseArgs(const BoundsSpan<std::string_view> &args) {
+void Parser::parseArgs(const BoundsSpan<std::string_view> &args) { // NOLINT misc-no-recursion
 	_args.reserve(args.size() + _args.size());
 	for (std::size_t i = 0; i < args.size(); i++) {
 		const std::string_view arg = args[i];

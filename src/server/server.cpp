@@ -1,19 +1,18 @@
 #include "server.hpp"
 #include "parser.hpp"
 
+#include <algorithm>
 #include <boost/log/trivial.hpp>
 #include <boost/process.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <execution>
+#include <functional>
 #include <iostream>
 #include <iterator>
 #include <memory>
 #include <sstream>
 #include <string_view>
-
-using std::execution::unseq;
 
 namespace distplusplus::server {
 
@@ -26,11 +25,8 @@ bool ReservationCompare::operator()(const reservationType &a, const reservationT
 // TODO: finish
 
 static bool sanitizeFile(const distplusplus::File &file) {
-	const std::string filename = file.name();
-	if (!(std::filesystem::path(filename).filename() == filename)) {
-		return false;
-	}
-	return true;
+	const std::string &filename = file.name();
+	return std::filesystem::path(filename).filename() == filename;
 }
 
 static bool sanitizeRequest(const distplusplus::CompileRequest &request) {
@@ -45,22 +41,13 @@ static bool sanitizeRequest(const distplusplus::CompileRequest &request) {
 // TODO: this is NOT secure yet and purely for convenience
 static bool checkCompilerAllowed(const std::string &compiler) {
 	// TODO: check for dir priveleges
-	for (const std::filesystem::directory_entry &file : std::filesystem::directory_iterator("/usr/lib/distcc")) {
-		if (file.is_symlink()) {
-			if (compiler == file.path().filename()) {
-				return true;
-			}
-		}
-	}
+	std::function<bool(const std::filesystem::directory_entry &)> checkIfSymlink = [&compiler](const auto &file) {
+		return file.is_symlink() && compiler == file.path().filename();
+	};
+
+	return std::ranges::any_of(std::filesystem::directory_iterator("/usr/lib/distcc"), checkIfSymlink);
 	// lazy copy
-	for (const std::filesystem::directory_entry &file : std::filesystem::directory_iterator("/usr/libexec/distplusplus")) {
-		if (file.is_symlink()) {
-			if (compiler == file.path().filename()) {
-				return true;
-			}
-		}
-	}
-	return false;
+	return std::ranges::any_of(std::filesystem::directory_iterator("/usr/libexec/distplusplus"), checkIfSymlink);
 }
 
 void Server::reservationReaper() {
@@ -109,7 +96,7 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
 		reservationLock.unlock();
 		const std::string errorMessage = "error: uuid " + clientUUID + " not in reservation list.";
 		BOOST_LOG_TRIVIAL(warning) << "client " << clientIP << " sent job but uuid " << clientUUID << " was not in reservation list";
-		return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, errorMessage);
+		return {grpc::StatusCode::FAILED_PRECONDITION, errorMessage};
 	}
 	reservationLock.unlock();
 	common::ScopeGuard jobCountGuard([&]() { jobsRunning--; });
@@ -117,13 +104,13 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
 	// TODO: do this proper
 	if (!sanitizeRequest(*request)) {
 		BOOST_LOG_TRIVIAL(warning) << "client " << clientIP << " with job " << clientUUID << " protocol violation!";
-		return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, "protocol violation");
+		return {grpc::StatusCode::INVALID_ARGUMENT, "protocol violation"};
 	}
 
 	if (!checkCompilerAllowed(request->compiler())) {
 		const std::string errorMessage = "error: compiler " + request->compiler() + " not in allow list";
 		BOOST_LOG_TRIVIAL(warning) << "client " << clientIP << " sent job but compiler " << request->compiler() << " was not in allow list";
-		return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, errorMessage);
+		return {grpc::StatusCode::INVALID_ARGUMENT, errorMessage};
 	}
 
 	const distplusplus::common::Tempfile inputFile(clientIP + "." + request->inputfile().name(), request->inputfile().content());
@@ -138,7 +125,7 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
 	} catch (const parser::CannotProcessSignal &signal) {
 		BOOST_LOG_TRIVIAL(warning) << "job " << clientUUID << " from host " << clientIP << " aborted due to invalid arguments:\n"
 								   << signal.what();
-		return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, "job aborted due to invalid arguments:\n" + signal.what());
+		return {grpc::StatusCode::INVALID_ARGUMENT, "job aborted due to invalid arguments:\n" + signal.what()};
 	}
 
 	args.emplace_back("-o");
@@ -155,9 +142,9 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
 		boost::process::ipstream stderrPipe;
 		// this is really messy but boost::process::args wouldn't work, need to investigate
 		std::vector<std::string> processArgs;
-		processArgs.push_back(compilerPath.c_str());
+		processArgs.emplace_back(compilerPath.c_str());
 		for (const auto &arg : args) {
-			processArgs.push_back(std::string(arg));
+			processArgs.emplace_back(arg);
 		}
 		boost::process::child process(processArgs, boost::process::std_out > stdoutPipe, boost::process::std_err > stderrPipe);
 		compilerStdout = std::string(std::istreambuf_iterator(stdoutPipe), {});

@@ -48,8 +48,8 @@ static int func(common::BoundsSpan<std::string_view> &argv) {
 		throw FallbackSignal();
 	}
 
-#define XSTRINGIFY(s) STRINGIFY(s)
-#define STRINGIFY(s) #s
+#define XSTRINGIFY(s) STRINGIFY(s) // NOLINT ccpcoreguidelines-macro-usage
+#define STRINGIFY(s) #s			   // NOLINT ccpcoreguidelines-macro-usage
 	if (compilerType == distplusplus::CompilerType::clang) {
 		if (!parser.target().has_value()) {
 			argsStore.emplace_back(std::string("-target"));

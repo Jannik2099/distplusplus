@@ -12,6 +12,7 @@
 #include <system_error>
 #include <type_traits>
 #include <unistd.h>
+#include <utility>
 
 using std::filesystem::filesystem_error;
 
@@ -43,7 +44,7 @@ void initBoostLogging() {
 	}
 }
 
-ScopeGuard::ScopeGuard(std::function<void()> atexit) : atexit(atexit) {}
+ScopeGuard::ScopeGuard(std::function<void()> atexit) : atexit(std::move(atexit)) {}
 ScopeGuard::~ScopeGuard() {
 	if (fuse) {
 		atexit();
@@ -109,7 +110,7 @@ Tempfile::Tempfile(const std::filesystem::path &name, const std::string &content
 }
 
 Tempfile::~Tempfile() {
-	free(namePtr);
+	free(namePtr); // NOLINT cppcoreguidelines-owning-memory
 	if (!cleanup) {
 		return;
 	}

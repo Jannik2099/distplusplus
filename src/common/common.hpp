@@ -89,7 +89,7 @@ template <class R> BoundsSpan(R &&) -> BoundsSpan<std::remove_reference_t<std::r
 class ScopeGuard {
 private:
 	bool fuse = true;
-	std::function<void()> atexit;
+	const std::function<void()> atexit;
 
 public:
 	ScopeGuard() = delete;
@@ -123,7 +123,7 @@ public:
 class Tempfile final : public path {
 private:
 	bool cleanup = true;
-	char *namePtr;
+	char *namePtr = nullptr;
 	void createFileName(const path &path);
 
 public:

@@ -18,9 +18,9 @@ private:
 public:
 	Config();
 
-	const std::vector<std::string> &servers() const;
-	const std::filesystem::path &stateDir() const;
-	const int &reservationAttemptTimeout() const;
+	[[nodiscard]] const std::vector<std::string> &servers() const;
+	[[nodiscard]] const std::filesystem::path &stateDir() const;
+	[[nodiscard]] const int &reservationAttemptTimeout() const;
 };
 
 const extern Config config;

@@ -1,8 +1,8 @@
 #include <boost/log/trivial.hpp>
 #include <chrono>
+#include <climits>
 #include <grpc/grpc.h>
 #include <grpcpp/create_channel.h>
-#include <limits.h>
 #include <thread>
 
 #include "client.hpp"
@@ -55,7 +55,8 @@ CompileAnswer Client::send(const std::string &compilerName, const std::vector<st
 				allDown = false;
 				foundServer = true;
 				break;
-			} else if (status == grpc::StatusCode::UNAVAILABLE) {
+			}
+			if (status == grpc::StatusCode::UNAVAILABLE) {
 				BOOST_LOG_TRIVIAL(info) << "host " << server << " is unreachable, attempting next host";
 			} else {
 				allDown = false;
