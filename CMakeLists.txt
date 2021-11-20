@@ -60,6 +60,8 @@ if(SYSTEM_GRPC)
 	find_program(protoc protoc REQUIRED)
 	find_program(grpc_cpp_plugin grpc_cpp_plugin REQUIRED)
 else()
+	# can't be bothered to sort the static archives
+	string(APPEND CMAKE_EXE_LINKER_FLAGS " -fuse-ld=lld")
 	ExternalProject_Add(grpc-third_party
 		PREFIX
 			${CMAKE_CURRENT_BINARY_DIR}/third_party/grpc
@@ -85,6 +87,7 @@ else()
 	endmacro()
 
 	# it was easier to create this via find | echo than think about a better solution to do it at runtime ¯\_(ツ)_/¯
+	# for i in $(find . -type f); do file=${i#./}; if [[ $file == *.a ]]; then file2=${file%.a}; file3=${file2#lib}; echo "register_grpc_lib($file3)"; fi; done
 	register_grpc_lib(cares)
 	register_grpc_lib(re2)
 	register_grpc_lib(ssl)
