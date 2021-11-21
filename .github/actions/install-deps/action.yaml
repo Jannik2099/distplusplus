@@ -13,6 +13,10 @@ runs:
       shell: bash
     - run: sudo apt-get install -y wget software-properties-common gnupg
       shell: bash
+    - run: wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | sudo apt-key add -
+      shell: bash
+    - run: sudo apt-add-repository "deb https://apt.kitware.com/ubuntu/ focal main"
+      shell: bash
     - run: wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
       shell: bash
     - run: sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main"
