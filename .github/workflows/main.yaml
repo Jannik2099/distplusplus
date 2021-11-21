@@ -31,7 +31,7 @@ jobs:
         run: ninja
         working-directory: ./build
       - name: test
-        run: ninja test
+        run: ctest -j2 --output-on-failure
         working-directory: ./build
       - name: coverage
         run: ninja coverage
