@@ -11,3 +11,6 @@ add_simple_test(TestParserNoDistributeSingleStartsWith "distplusplus::server::pa
 add_simple_test(TestParserNoDistributeMulti "distplusplus::server::parser")
 
 add_simple_test(TestParserCannotProcessSignal "distplusplus::server::parser")
+
+add_bash_test(TestServerStartup)
+add_bash_test(TestServerNoListenAddress)

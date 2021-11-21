@@ -1,7 +1,7 @@
 function(add_simple_test name libraries)
 	set(filename "${CMAKE_CURRENT_SOURCE_DIR}/${name}.cpp")
 	if(NOT EXISTS ${filename})
-		message(FATAL_ERROR "unit test file ${filename} does not exist")
+		message(FATAL_ERROR "unit test source ${filename} does not exist")
 	endif()
 	add_executable("${name}" "${filename}")
 	target_link_libraries("${name}" ${libraries})
@@ -9,6 +9,27 @@ function(add_simple_test name libraries)
 	if(COVERAGE)
 		set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT LLVM_PROFILE_FILE=${name}.profraw)
 		set_property(TEST "${name}" PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE:${name}>.profraw")
+	endif()
+endfunction()
+
+function(add_bash_test name)
+	set(filename "${CMAKE_CURRENT_SOURCE_DIR}/${name}.sh")
+	if(NOT EXISTS ${filename})
+		message(FATAL_ERROR "unit test script ${filename} does not exist")
+	endif()
+	execute_process(
+		COMMAND "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/BashTestVerify.sh" ${filename}
+		RESULT_VARIABLE ret
+		OUTPUT_QUIET ERROR_QUIET
+	)
+	if(NOT ret EQUAL 0)
+		message(FATAL_ERROR "unit test script ${filename} does not define a runTest function")
+	endif()
+
+	add_test(NAME "${name}" COMMAND "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/BashTestLib.sh" ${filename} ${name} $<TARGET_FILE:distplusplus> $<TARGET_FILE:distplusplus-server>)
+	if(COVERAGE)
+		set_property(TEST "${name}" APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${name}-client.profraw")
+		set_property(TEST "${name}" APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${name}-server.profraw")
 	endif()
 endfunction()
 
