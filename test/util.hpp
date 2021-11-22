@@ -3,7 +3,7 @@
 #include <random>
 #include <string>
 
-std::string randomString(int len = 10) {
+static std::string randomString(int len = 10) {
 	std::random_device dev;
 	std::mt19937 rng(dev());
 	std::uniform_int_distribution<std::mt19937::result_type> dist(0, 25);
