@@ -25,9 +25,9 @@ jobs:
           max-size: 3G
       - name: prepare config dirs
         run: |
-          mkdir -p /usr/lib/distcc /usr/libexec/distplusplus
-          ln -s /usr/bin/distcc cc
-          ln -s /home/runner/work/distplusplus/distplusplus/build/src/client/distplusplus cc
+          sudo mkdir -p /usr/lib/distcc /usr/libexec/distplusplus
+          sudo ln -s /usr/bin/distcc cc
+          sudo ln -s /home/runner/work/distplusplus/distplusplus/build/src/client/distplusplus cc
       - name: configure
         run: |
           mkdir build
