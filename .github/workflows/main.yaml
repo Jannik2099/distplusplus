@@ -26,8 +26,8 @@ jobs:
       - name: prepare config dirs
         run: |
           sudo mkdir -p /usr/lib/distcc /usr/libexec/distplusplus
-          sudo ln -s /usr/bin/distcc cc
-          sudo ln -s /home/runner/work/distplusplus/distplusplus/build/src/client/distplusplus cc
+          sudo ln -s -t /usr/lib/distcc /usr/bin/distcc cc
+          sudo ln -s -t /usr/libexec/distplusplus /home/runner/work/distplusplus/distplusplus/build/src/client/distplusplus cc
       - name: configure
         run: |
           mkdir build
