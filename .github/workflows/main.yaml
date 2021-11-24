@@ -16,7 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          submodules: 'recursive'
+          submodules: 'true'
+      - name: checkout submodules
+        run: |
+          cd third_party/grpc && git submodule update --init --recursive
+          cd third_party/boost && git submodule update --init tools/build libs/log libs/filesystem libs/process libs/uuid
       - uses: ./.github/actions/install-deps
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
