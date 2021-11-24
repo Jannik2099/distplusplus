@@ -5,7 +5,6 @@ function runTest() {
 	PID=$!
 	sleep 1
 
-	export DISTPLUSPLUS_LISTEN_ADDRESS="unix:/home/jannik/Dokumente/projects/distplusplus/build/test.sock"
 	UUID=$(${SERVER_HELPER} "Reservation" "{}")
 #int main() {} in base64 is aW50IG1haW4oKSB7fQ==
 	FILE='{"name":"main.c","content":"aW50IG1haW4oKSB7fQ=="}'
