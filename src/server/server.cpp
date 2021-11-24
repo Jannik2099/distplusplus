@@ -8,6 +8,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <functional>
+#include <google/protobuf/util/json_util.h>
 #include <iostream>
 #include <iterator>
 #include <memory>
@@ -91,6 +92,11 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
 								distplusplus::CompileAnswer *answer) {
 	const std::string clientIP = context->peer();
 	const std::string &clientUUID = request->uuid();
+	BOOST_LOG_TRIVIAL(trace) << "client " << clientIP << " sent RPC " << [&request]() {
+		std::string ret;
+		google::protobuf::util::MessageToJsonString(*request, &ret);
+		return ret;
+	}();
 	reservationLock.lock();
 	if (std::erase_if(reservations, [&clientUUID](const _internal::reservationType &a) { return std::get<0>(a) == clientUUID; }) == 0) {
 		reservationLock.unlock();
@@ -133,30 +139,17 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
 	args.emplace_back(inputFile.c_str());
 
 	const boost::filesystem::path compilerPath = boost::process::search_path(request->compiler());
-	std::string compilerStdout;
-	std::string compilerStderr;
-	int returnCode = 0;
-	// scope the ipstreams since accessing them after child.wait() is illegal
-	{
-		boost::process::ipstream stdoutPipe;
-		boost::process::ipstream stderrPipe;
-		// this is really messy but boost::process::args wouldn't work, need to investigate
-		std::vector<std::string> processArgs;
-		processArgs.emplace_back(compilerPath.c_str());
-		for (const auto &arg : args) {
-			processArgs.emplace_back(arg);
-		}
-		boost::process::child process(processArgs, boost::process::std_out > stdoutPipe, boost::process::std_err > stderrPipe);
-		compilerStdout = std::string(std::istreambuf_iterator(stdoutPipe), {});
-		compilerStderr = std::string(std::istreambuf_iterator(stderrPipe), {});
-		process.wait();
-		returnCode = process.exit_code();
+	std::vector<std::string> processArgs;
+	processArgs.reserve(args.size());
+	for (const auto &arg : args) {
+		processArgs.emplace_back(arg);
 	}
+	distplusplus::common::ProcessHelper compilerProcess(compilerPath, processArgs);
 	// TODO: proper logging
 
-	answer->set_returncode(returnCode);
-	answer->set_stdout(compilerStdout);
-	answer->set_stderr(compilerStderr);
+	answer->set_returncode(compilerProcess.returnCode());
+	answer->set_stdout(compilerProcess.get_stdout());
+	answer->set_stderr(compilerProcess.get_stderr());
 	answer->mutable_outputfile()->set_name(outputFile);
 	std::ifstream fileStream(outputFile);
 	std::stringstream fileContent;
