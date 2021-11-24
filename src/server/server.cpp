@@ -46,9 +46,16 @@ static bool checkCompilerAllowed(const std::string &compiler) {
 		return file.is_symlink() && compiler == file.path().filename();
 	};
 
-	return std::ranges::any_of(std::filesystem::directory_iterator("/usr/lib/distcc"), checkIfSymlink);
+	bool ret1 = false;
+	if (std::filesystem::is_directory("/usr/lib/distcc")) {
+		ret1 = std::ranges::any_of(std::filesystem::directory_iterator("/usr/lib/distcc"), checkIfSymlink);
+	}
 	// lazy copy
-	return std::ranges::any_of(std::filesystem::directory_iterator("/usr/libexec/distplusplus"), checkIfSymlink);
+	bool ret2 = false;
+	if (std::filesystem::is_directory("/usr/libexec/distplusplus")) {
+		ret2 = std::ranges::any_of(std::filesystem::directory_iterator("/usr/libexec/distplusplus"), checkIfSymlink);
+	}
+	return ret1 || ret2;
 }
 
 void Server::reservationReaper() {
@@ -124,7 +131,8 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
 		// the client could be a path to an unix socket too
 		std::string clientIPDelimited = clientIP;
 		std::replace(clientIPDelimited.begin(), clientIPDelimited.end(), '/', '-');
-		const distplusplus::common::Tempfile inputFile(clientIPDelimited + "." + request->inputfile().name(), request->inputfile().content());
+		const distplusplus::common::Tempfile inputFile(clientIPDelimited + "." + request->inputfile().name(),
+													   request->inputfile().content());
 
 		const distplusplus::common::Tempfile outputFile(clientIPDelimited + "." + request->inputfile().name() + ".o");
 
