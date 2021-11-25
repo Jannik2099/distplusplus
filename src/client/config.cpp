@@ -14,7 +14,7 @@ static std::filesystem::path getStateDir() {
 		ret = std::string(var) + std::string("/.local/state/distplusplus");
 	} else {
 		const std::string err_msg("could not figure out state directory");
-		BOOST_LOG_TRIVIAL(fatal) << err_msg;
+		BOOST_LOG_TRIVIAL(error) << err_msg;
 		throw std::runtime_error(err_msg);
 	}
 	std::filesystem::create_directories(ret);
@@ -31,7 +31,7 @@ static toml::table getConfigFile() {
 	}
 	if (!std::filesystem::is_regular_file(ret)) {
 		const std::string err_msg("config file " + ret.string() + " does not exist or is not a regular file");
-		BOOST_LOG_TRIVIAL(fatal) << err_msg;
+		BOOST_LOG_TRIVIAL(error) << err_msg;
 		throw std::runtime_error(err_msg);
 	}
 	return toml::parse_file(std::string(ret));
@@ -45,7 +45,7 @@ static std::vector<std::string> getServers(const toml::table &configFile) {
 	}
 	if (ret.empty()) {
 		const std::string err_msg("config file " + *configFile.source().path + " provides no hosts");
-		BOOST_LOG_TRIVIAL(fatal) << err_msg;
+		BOOST_LOG_TRIVIAL(error) << err_msg;
 		throw std::runtime_error(err_msg);
 	}
 	return ret;
@@ -54,7 +54,7 @@ static std::vector<std::string> getServers(const toml::table &configFile) {
 Config::Config() : _stateDir(getStateDir()), configFile(getConfigFile()), _servers(getServers(configFile)) {
 	if (_servers.empty()) {
 		const std::string err_msg("config file " + *configFile.source().path + " provides empty list of hosts");
-		BOOST_LOG_TRIVIAL(fatal) << err_msg;
+		BOOST_LOG_TRIVIAL(error) << err_msg;
 		throw std::runtime_error(err_msg);
 	}
 }

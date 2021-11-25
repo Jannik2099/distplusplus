@@ -36,7 +36,7 @@ int main() {
 	distplusplus::common::initBoostLogging();
 	char *listenAddr = getenv("DISTPLUSPLUS_LISTEN_ADDRESS");
 	if (listenAddr == nullptr) {
-		BOOST_LOG_TRIVIAL(fatal) << "no listen address set - see DISTPLUSPLUS_LISTEN_ADDRESS";
+		BOOST_LOG_TRIVIAL(error) << "no listen address set - see DISTPLUSPLUS_LISTEN_ADDRESS";
 		exit(1);
 	}
 	BOOST_LOG_TRIVIAL(info) << "listening on " << listenAddr;
