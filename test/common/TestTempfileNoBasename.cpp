@@ -1,4 +1,5 @@
 #include "common/common.hpp"
+
 #include <stdexcept>
 
 using namespace distplusplus::common;
