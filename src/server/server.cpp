@@ -2,11 +2,13 @@
 #include "parser.hpp"
 
 #include <algorithm>
+#include <boost/core/demangle.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/process.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <exception>
 #include <functional>
 #include <google/protobuf/util/json_util.h>
 #include <iostream>
@@ -14,6 +16,7 @@
 #include <memory>
 #include <sstream>
 #include <string_view>
+#include <typeinfo>
 
 namespace distplusplus::server {
 
@@ -22,6 +25,17 @@ namespace _internal {
 bool ReservationCompare::operator()(const reservationType &a, const reservationType &b) const { return std::get<1>(a) < std::get<1>(b); }
 
 } // namespace _internal
+
+[[noreturn]] static void exceptionAbortHandler(const std::exception &e) noexcept {
+	const std::string typeName = boost::core::demangle(typeid(e).name());
+	BOOST_LOG_TRIVIAL(fatal) << "caught exception in gRPC function: " << typeName << " " << e.what();
+	std::terminate();
+}
+
+[[noreturn]] static void exceptionAbortHandler() noexcept {
+	BOOST_LOG_TRIVIAL(fatal) << "caught exception of unexpected type in gRPC function";
+	std::terminate();
+}
 
 // TODO: finish
 
@@ -78,21 +92,27 @@ void Server::reservationReaper() {
 
 grpc::Status Server::Reserve([[maybe_unused]] grpc::ServerContext *context, [[maybe_unused]] const distplusplus::Reservation *reservation,
 							 distplusplus::ReservationAnswer *answer) {
-	if (jobsRunning < jobsMax) {
-		std::uint64_t jobsCur = jobsRunning.load();
-		if (std::atomic_compare_exchange_strong(&jobsRunning, &jobsCur, jobsCur + 1)) {
-			common::ScopeGuard jobCountGuard([&]() { jobsRunning--; });
-			const std::string uuid = boost::uuids::to_string(boost::uuids::random_generator()());
-			reservations.emplace_hint(reservations.end(), std::pair(uuid, std::chrono::system_clock::now()));
-			answer->set_uuid(uuid);
-			answer->set_success(true);
-			BOOST_LOG_TRIVIAL(debug) << "reserved job " << uuid << " for client " << context->peer();
-			jobCountGuard.defuse();
-			return grpc::Status::OK;
+	try {
+		if (jobsRunning < jobsMax) {
+			std::uint64_t jobsCur = jobsRunning.load();
+			if (std::atomic_compare_exchange_strong(&jobsRunning, &jobsCur, jobsCur + 1)) {
+				common::ScopeGuard jobCountGuard([&]() { jobsRunning--; });
+				const std::string uuid = boost::uuids::to_string(boost::uuids::random_generator()());
+				reservations.emplace_hint(reservations.end(), std::pair(uuid, std::chrono::system_clock::now()));
+				answer->set_uuid(uuid);
+				answer->set_success(true);
+				BOOST_LOG_TRIVIAL(debug) << "reserved job " << uuid << " for client " << context->peer();
+				jobCountGuard.defuse();
+				return grpc::Status::OK;
+			}
 		}
+		answer->set_success(false);
+		return grpc::Status::OK;
+	} catch (const std::exception &e) {
+		exceptionAbortHandler(e);
+	} catch (...) {
+		exceptionAbortHandler();
 	}
-	answer->set_success(false);
-	return grpc::Status::OK;
 }
 
 grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus::CompileRequest *request,
@@ -170,8 +190,9 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
 		answer->mutable_outputfile()->set_content(fileContent.str());
 		return grpc::Status::OK;
 	} catch (const std::exception &e) {
-		std::cerr << "exception in gRPC function: " << e.what() << std::endl;
-		std::abort();
+		exceptionAbortHandler(e);
+	} catch (...) {
+		exceptionAbortHandler();
 	}
 }
 
