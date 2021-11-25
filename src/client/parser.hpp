@@ -5,6 +5,9 @@
 #undef TESTING_PRIVATE
 #endif
 
+#include "common/common.hpp"
+#include "common/constants.hpp"
+
 #include <exception>
 #include <filesystem>
 #include <iterator>
@@ -12,9 +15,6 @@
 #include <string>
 #include <string_view>
 #include <vector>
-
-#include "common/common.hpp"
-#include "common/constants.hpp"
 
 #ifdef TESTING_PRIVATE_DISTPLUSPLUS_CLIENT_PARSER
 #define private public

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "distplusplus.pb.h"
+
 #include <boost/filesystem.hpp>
 #include <boost/process.hpp>
 #include <filesystem>
@@ -13,8 +15,6 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-
-#include "distplusplus.pb.h"
 
 using std::filesystem::path;
 

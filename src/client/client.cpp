@@ -1,14 +1,15 @@
+#include "client.hpp"
+
+#include "common/common.hpp"
+#include "config.hpp"
+#include "fallback.hpp"
+
 #include <boost/log/trivial.hpp>
 #include <chrono>
 #include <climits>
 #include <grpc/grpc.h>
 #include <grpcpp/create_channel.h>
 #include <thread>
-
-#include "client.hpp"
-#include "common/common.hpp"
-#include "config.hpp"
-#include "fallback.hpp"
 
 using namespace distplusplus;
 

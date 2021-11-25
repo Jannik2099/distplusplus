@@ -1,5 +1,9 @@
 #pragma once
 
+#include "common/common.hpp"
+#include "distplusplus.grpc.pb.h"
+#include "distplusplus.pb.h"
+
 #include <atomic>
 #include <chrono>
 #include <cstdint>
@@ -12,10 +16,6 @@
 #include <thread>
 #include <utility>
 #include <vector>
-
-#include "common/common.hpp"
-#include "distplusplus.grpc.pb.h"
-#include "distplusplus.pb.h"
 
 namespace distplusplus::server {
 

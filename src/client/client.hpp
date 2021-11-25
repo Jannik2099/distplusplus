@@ -1,17 +1,17 @@
 #pragma once
 
+#include "distplusplus.grpc.pb.h"
+#include "distplusplus.pb.h"
+
 #include <filesystem>
 #include <grpc/grpc.h>
 #include <grpcpp/channel.h>
+#include <grpcpp/create_channel.h>
+#include <grpcpp/security/credentials.h>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
-
-#include "distplusplus.grpc.pb.h"
-#include "distplusplus.pb.h"
-#include <grpcpp/create_channel.h>
-#include <grpcpp/security/credentials.h>
 
 using namespace distplusplus;
 

@@ -1,3 +1,6 @@
+#include "common/common.hpp"
+#include "server.hpp"
+
 #include <boost/log/trivial.hpp>
 #include <chrono>
 #include <climits>
@@ -9,9 +12,6 @@
 #include <memory>
 #include <string>
 #include <thread>
-
-#include "common/common.hpp"
-#include "server.hpp"
 
 using namespace distplusplus::server;
 
