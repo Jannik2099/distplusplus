@@ -1,10 +1,11 @@
 #include "parser.hpp"
 #include "common/common.hpp"
 #include "common/constants.hpp"
+
 #include <algorithm>
 #include <boost/log/trivial.hpp>
+#include <cstddef>
 #include <execution>
-#include <type_traits>
 
 using std::execution::unseq;
 
@@ -16,7 +17,7 @@ std::vector<std::string_view> Parser::parse(const std::vector<std::string_view> 
 	std::vector<std::string_view> myargs;
 	myargs.reserve(args.size());
 	bool canDistribute = false;
-	for (std::remove_reference<decltype(args)>::type::size_type i = 0; i < args.size(); i++) {
+	for (std::size_t i = 0; i < args.size(); i++) {
 		if (std::any_of(unseq, singleArgsNoDistribute.begin(), singleArgsNoDistribute.end(),
 						[&](const auto &arg) { return args[i] == arg; })) {
 			throw CannotProcessSignal("encountered non-distributable argument " + std::string(args[i]));
