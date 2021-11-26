@@ -27,8 +27,6 @@ bool ReservationCompare::operator()(const reservationType &a, const reservationT
 
 } // namespace _internal
 
-// since these just abort, no profile data will be generated
-// LCOV_EXCL_START
 [[noreturn]] static void exceptionAbortHandler(const std::exception &e) noexcept {
 	const std::string typeName = boost::core::demangle(typeid(e).name());
 	BOOST_LOG_TRIVIAL(fatal) << "caught exception in gRPC function: " << typeName << " " << e.what();
@@ -39,7 +37,6 @@ bool ReservationCompare::operator()(const reservationType &a, const reservationT
 	BOOST_LOG_TRIVIAL(fatal) << "caught exception of unexpected type in gRPC function";
 	std::terminate();
 }
-// LCOV_EXCL_STOP
 
 // TODO: finish
 
@@ -113,14 +110,11 @@ grpc::Status Server::Reserve([[maybe_unused]] grpc::ServerContext *context, [[ma
 		}
 		answer->set_success(false);
 		return grpc::Status::OK;
-
-		// LCOV_EXCL_START
 	} catch (const std::exception &e) {
 		exceptionAbortHandler(e);
 	} catch (...) {
 		exceptionAbortHandler();
 	}
-	// LCOV_EXCL_STOP
 }
 
 grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus::CompileRequest *request,
@@ -197,14 +191,11 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
 		fileContent << fileStream.rdbuf();
 		answer->mutable_outputfile()->set_content(fileContent.str());
 		return grpc::Status::OK;
-
-		// LCOV_EXCL_START
 	} catch (const std::exception &e) {
 		exceptionAbortHandler(e);
 	} catch (...) {
 		exceptionAbortHandler();
 	}
-	// LCOV_EXCL_STOP
 }
 
 } // namespace distplusplus::server
