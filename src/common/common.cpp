@@ -146,7 +146,7 @@ distplusplus::CompilerType mapCompiler(const std::string &compiler) {
 	return distplusplus::CompilerType::UNKNOWN;
 }
 
-const char *mapGRPCStatus(const grpc::StatusCode &status) {
+std::string mapGRPCStatus(const grpc::StatusCode &status) {
 	switch (status) {
 	case grpc::StatusCode::DO_NOT_USE:
 		return "DO_NOT_USE";

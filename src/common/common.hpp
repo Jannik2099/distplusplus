@@ -142,6 +142,6 @@ public:
 
 distplusplus::CompilerType mapCompiler(const std::string &compiler);
 
-const char *mapGRPCStatus(const grpc::StatusCode &status);
+std::string mapGRPCStatus(const grpc::StatusCode &status);
 
 } // namespace distplusplus::common
