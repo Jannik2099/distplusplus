@@ -100,7 +100,10 @@ grpc::Status Server::Reserve([[maybe_unused]] grpc::ServerContext *context, [[ma
 			if (std::atomic_compare_exchange_strong(&jobsRunning, &jobsCur, jobsCur + 1)) {
 				common::ScopeGuard jobCountGuard([&]() { jobsRunning--; });
 				const std::string uuid = boost::uuids::to_string(boost::uuids::random_generator()());
-				reservations.emplace_hint(reservations.end(), std::pair(uuid, std::chrono::system_clock::now()));
+				{
+					std::lock_guard lockGuard(reservationLock);
+					reservations.emplace_hint(reservations.end(), std::pair(uuid, std::chrono::system_clock::now()));
+				}
 				answer->set_uuid(uuid);
 				answer->set_success(true);
 				BOOST_LOG_TRIVIAL(debug) << "reserved job " << uuid << " for client " << context->peer();
