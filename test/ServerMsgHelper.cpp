@@ -66,6 +66,7 @@ int main(int argc, char *argv[]) {
 							   dynamic_cast<distplusplus::CompileAnswer *>(answer.get()));
 	}
 	if (ret.error_code() != grpc::StatusCode::OK) {
+		std::cout << distplusplus::common::mapGRPCStatus(ret.error_code());
 		std::cerr << "ServerMsgHelper: rpc call " << messageType << " returned " << distplusplus::common::mapGRPCStatus(ret.error_code())
 				  << " " << ret.error_message() << std::endl;
 		return 1;
