@@ -79,15 +79,17 @@ void Server::reservationReaper() {
 		const _internal::reservationTypeB timestamp = std::chrono::system_clock::now();
 		// TODO: make configurable
 		std::this_thread::sleep_for(std::chrono::seconds(1));
-		std::lock_guard lockGuard(reservationLock);
-		const auto before = reservations.size();
-		const auto bound = reservations.lower_bound(std::pair("", timestamp));
-		reservations.erase(reservations.begin(), bound);
-		const auto after = reservations.size();
-		const auto diff = before - after;
-		jobsRunning -= diff;
-		if (diff > 0) {
-			BOOST_LOG_TRIVIAL(info) << "reaped " << diff << " stale reservations - consider increasing reservation timeout";
+		{
+			std::lock_guard lockGuard(reservationLock);
+			const auto before = reservations.size();
+			const auto bound = reservations.lower_bound(std::pair("", timestamp));
+			reservations.erase(reservations.begin(), bound);
+			const auto after = reservations.size();
+			const auto diff = before - after;
+			jobsRunning -= diff;
+			if (diff > 0) {
+				BOOST_LOG_TRIVIAL(info) << "reaped " << diff << " stale reservations - consider increasing reservation timeout";
+			}
 		}
 	}
 }
@@ -130,14 +132,16 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
 			google::protobuf::util::MessageToJsonString(*request, &ret);
 			return ret;
 		}();
-		reservationLock.lock();
-		if (std::erase_if(reservations, [&clientUUID](const _internal::reservationType &a) { return std::get<0>(a) == clientUUID; }) == 0) {
-			reservationLock.unlock();
-			const std::string errorMessage = "error: uuid " + clientUUID + " not in reservation list.";
-			BOOST_LOG_TRIVIAL(warning) << "client " << clientIP << " sent job but uuid " << clientUUID << " was not in reservation list";
-			return {grpc::StatusCode::FAILED_PRECONDITION, errorMessage};
+		{
+			std::lock_guard lockGuard(reservationLock);
+			if (std::erase_if(reservations, [&clientUUID](const _internal::reservationType &a) { return std::get<0>(a) == clientUUID; }) ==
+				0) {
+				const std::string errorMessage = "error: uuid " + clientUUID + " not in reservation list.";
+				BOOST_LOG_TRIVIAL(warning) << "client " << clientIP << " sent job but uuid " << clientUUID
+										   << " was not in reservation list";
+				return {grpc::StatusCode::FAILED_PRECONDITION, errorMessage};
+			}
 		}
-		reservationLock.unlock();
 		common::ScopeGuard jobCountGuard([&]() { jobsRunning--; });
 
 		// TODO: do this proper
