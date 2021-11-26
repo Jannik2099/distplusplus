@@ -48,7 +48,7 @@ static bool sanitizeFile(const distplusplus::File &file) {
 static bool sanitizeRequest(const distplusplus::CompileRequest &request) {
 
 	const std::string &compiler = request.compiler();
-	if (!(std::filesystem::path(compiler).filename() == compiler)) {
+	if (std::filesystem::path(compiler).filename() != compiler) {
 		return false;
 	}
 	return sanitizeFile(request.inputfile());
