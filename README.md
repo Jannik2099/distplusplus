@@ -64,7 +64,7 @@ Should you have come this far and still have the motivation to try distplusplus 
 	- the log level can be set via the environment variable `DISTPLUSPLUS_LOG_LEVEL`. Recognized levels are `trace, debug, info, warning, error, fatal`. The default log level is `warning`.
         - a lot of events are not properly logged yet - you may not get useful metrics or debugging assistance from this.
 	- the listen address is configured via the `DISTPLUSPLUS_LISTEN_ADDRESS` environment variable as a `ip:port` string.
-		The string is directly parsed by gRPC. See gRPC docs for details.
+		The string is directly parsed by gRPC. See [gRPC docs](https://grpc.github.io/grpc/cpp/md_doc_naming.html) for details.
 		- this will be done via a command line argument in the future.
 - client:
 	- usage is identical to distcc: either prefix the compiler with distplusplus or call it directly via a symlink in `/usr/libexec/distplusplus`
@@ -77,7 +77,7 @@ Should you have come this far and still have the motivation to try distplusplus 
 				"127.0.0.1:4321"
 			}
 
-        - The string is directly parsed by gRPC. See gRPC docs for details.
+        - The string is directly parsed by gRPC. See [gRPC docs](https://grpc.github.io/grpc/cpp/md_doc_naming.html) for details.
         - The config file syntax is not finalized yet
 
 Should you encounter any issues, please rebuild with `-DCMAKE_BUILD_TYPE=Debug` (this enables some extra asserts plus sanitizers) and report anything you find. A stack trace or even coredump will also be tremendeously helpful
