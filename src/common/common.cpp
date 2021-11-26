@@ -88,7 +88,7 @@ void Tempfile::createFileName(const path &path) {
 	}
 	std::string templateString = "XXXXXX" + suffix;
 	// char arrays are a special kind of hellspawn
-	char *templateCString = strdup(templateString.c_str()); // NOLINT: cppcoreguidelines-pro-type-vararg
+	char *templateCString = strdup(templateString.c_str()); // NOLINT(cppcoreguidelines-pro-type-vararg)
 	// and so is this function
 	const int fileDescriptor = mkstemps(templateCString, gsl::narrow_cast<int>(suffix.size() / sizeof(char)));
 	if (fileDescriptor == -1) {
@@ -111,7 +111,7 @@ Tempfile::Tempfile(const std::filesystem::path &name, const std::string &content
 }
 
 Tempfile::~Tempfile() {
-	free(namePtr); // NOLINT cppcoreguidelines-owning-memory
+	free(namePtr); // NOLINT(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
 	if (!cleanup) {
 		return;
 	}

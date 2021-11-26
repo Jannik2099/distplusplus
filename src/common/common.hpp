@@ -81,7 +81,8 @@ public:
 	}
 };
 template <class It, class EndOrSize> BoundsSpan(It, EndOrSize) -> BoundsSpan<std::remove_reference_t<std::iter_reference_t<It>>>;
-template <class T, std::size_t N> BoundsSpan(T (&)[N]) -> BoundsSpan<T, N>; // NOLINT: modernize-avoid-c-arrays
+template <class T, std::size_t N>
+BoundsSpan(T (&)[N]) -> BoundsSpan<T, N>; // NOLINT(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
 template <class T, std::size_t N> BoundsSpan(std::array<T, N> &) -> BoundsSpan<T, N>;
 template <class T, std::size_t N> BoundsSpan(const std::array<T, N> &) -> BoundsSpan<const T, N>;
 template <class R> BoundsSpan(R &&) -> BoundsSpan<std::remove_reference_t<std::ranges::range_reference_t<R>>>;
