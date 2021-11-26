@@ -74,7 +74,8 @@ static bool checkCompilerAllowed(const std::string &compiler) {
 }
 
 void Server::reservationReaper() {
-	while (!reservationReaperKillswitch) {
+	const std::stop_token token = reservationReaperThread.get_stop_token();
+	while (!token.stop_requested()) {
 		const _internal::reservationTypeB timestamp = std::chrono::system_clock::now();
 		// TODO: make configurable
 		std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -195,15 +196,6 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
 	} catch (...) {
 		exceptionAbortHandler();
 	}
-}
-
-Server::Server() {
-	reservationReaperThread = std::thread([this] { reservationReaper(); });
-}
-
-Server::~Server() {
-	reservationReaperKillswitch = true;
-	reservationReaperThread.join();
 }
 
 } // namespace distplusplus::server
