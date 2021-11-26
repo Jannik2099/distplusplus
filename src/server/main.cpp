@@ -23,6 +23,8 @@ static void signalHandler(int signal) {
 }
 
 static void signalReaper(const std::stop_token &token, grpc::Server *server) {
+	std::signal(SIGINT, signalHandler);
+	std::signal(SIGTERM, signalHandler);
 	while (signalFlag == 0) {
 		if (token.stop_requested()) {
 			return;
@@ -50,8 +52,6 @@ int main() {
 	std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
 
 	std::jthread signalReaperThread(&signalReaper, server.get());
-	std::signal(SIGINT, signalHandler);
-	std::signal(SIGTERM, signalHandler);
 
 	server->Wait();
 	signalReaperThread.request_stop();
