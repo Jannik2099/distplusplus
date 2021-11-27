@@ -41,7 +41,9 @@ void initBoostLogging() {
 	} else if (logLevel == "fatal") {
 		boost::log::core::get()->set_filter(boost::log::trivial::severity >= boost::log::trivial::fatal);
 	} else {
-		// TODO: error
+		const std::string errorMessage = "unrecognized log level " + logLevel;
+		BOOST_LOG_TRIVIAL(fatal) << errorMessage;
+		throw std::invalid_argument(errorMessage);
 	}
 }
 

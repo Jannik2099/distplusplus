@@ -14,6 +14,9 @@ add_simple_test(TestTempfileNoName "distplusplus::common")
 add_simple_test(TestTempfileNoBasename "distplusplus::common")
 
 add_simple_test(TestMapCompiler "distplusplus::common")
+add_simple_test(TestMapGRPCStatus "distplusplus::common")
 
 add_simple_test(TestAssertAndRaiseGood "distplusplus::common")
 add_simple_test(TestAssertAndRaiseBad "distplusplus::common")
+
+add_simple_test(TestInitBoostLogging "distplusplus::common")
