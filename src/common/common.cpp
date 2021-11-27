@@ -94,10 +94,16 @@ void Tempfile::createFileName(const path &path) {
 	// and so is this function
 	const int fileDescriptor = mkstemps(templateCString, gsl::narrow_cast<int>(suffix.size() / sizeof(char)));
 	if (fileDescriptor == -1) {
-		// TODO: error handling
+		const int err = errno;
+		const std::string errorMessage = "error creating file descriptor - errno is " + std::to_string(err);
+		BOOST_LOG_TRIVIAL(fatal) << errorMessage;
+		throw std::runtime_error(errorMessage);
 	}
 	if (close(fileDescriptor) == -1) {
-		// TODO: error handling
+		const int err = errno;
+		const std::string errorMessage = "error closing file descriptor - errno is " + std::to_string(err);
+		BOOST_LOG_TRIVIAL(fatal) << errorMessage;
+		throw std::runtime_error(errorMessage);
 	}
 	this->assign(templateCString);
 	namePtr = templateCString;
