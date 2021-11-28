@@ -206,9 +206,9 @@ else()
 			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_filesystem.a
 			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_program_options.a
 		COMMAND
-		${CMAKE_CURRENT_BINARY_DIR}/third_party/boost-build/b2 --prefix=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install --with-log --with-filesystem --stagedir=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/stage link=static threading=multi
+		${CMAKE_CURRENT_BINARY_DIR}/third_party/boost-build/b2 --prefix=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install --with-log --with-filesystem --with-program_options --stagedir=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/stage link=static threading=multi
 		COMMAND
-			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost-build/b2 --prefix=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install --with-log --with-filesystem --stagedir=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/stage link=static threading=multi install
+			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost-build/b2 --prefix=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install --with-log --with-filesystem --with-program_options --stagedir=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/stage link=static threading=multi install
 		WORKING_DIRECTORY
 			${CMAKE_CURRENT_SOURCE_DIR}/third_party/boost
 	)
