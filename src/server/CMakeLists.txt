@@ -12,6 +12,6 @@ target_link_libraries(server Boost::log distplusplus::common distplusplus::proto
 obj_propagate_targets(server)
 
 
-target_link_libraries(distplusplus-server server distplusplus::common parser-server distplusplus::protobuf distplusplus::grpc PkgConfig::protobuf PkgConfig::grpc++ Boost::filesystem Boost::log -ltbb)
+target_link_libraries(distplusplus-server server distplusplus::common parser-server distplusplus::protobuf distplusplus::grpc PkgConfig::protobuf PkgConfig::grpc++ Boost::filesystem Boost::log Boost::program_options -ltbb)
 
 install(TARGETS distplusplus-server RUNTIME)

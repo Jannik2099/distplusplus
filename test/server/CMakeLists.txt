@@ -13,7 +13,6 @@ add_simple_test(TestParserNoDistributeMulti "distplusplus::server::parser")
 add_simple_test(TestParserCannotProcessSignal "distplusplus::server::parser")
 
 add_bash_test(TestServerStartup)
-add_bash_test(TestServerNoListenAddress)
 add_bash_test(TestServerReserveAndReap)
 add_bash_test(TestServerReserveAndServe)
 add_bash_test(TestServerBadCompiler)

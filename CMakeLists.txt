@@ -178,7 +178,7 @@ endif()
 
 if(SYSTEM_BOOST)
 	add_compile_definitions("BOOST_ALL_DYN_LINK=1")
-	find_package(Boost REQUIRED COMPONENTS filesystem log)
+	find_package(Boost REQUIRED COMPONENTS filesystem log program_options)
 	add_custom_target(Boost)
 else()
 	add_custom_target(Boost_Build
@@ -204,6 +204,7 @@ else()
 			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_log_setup.a
 			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_thread.a
 			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_filesystem.a
+			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_program_options.a
 		COMMAND
 		${CMAKE_CURRENT_BINARY_DIR}/third_party/boost-build/b2 --prefix=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install --with-log --with-filesystem --stagedir=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/stage link=static threading=multi
 		COMMAND
@@ -228,6 +229,11 @@ else()
 	add_library(Boost::filesystem ALIAS boost_filesystem)
 	set_property(TARGET boost_filesystem PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_filesystem.a)
 	add_dependencies(boost_filesystem Boost)
+
+	add_library(boost_program_options STATIC IMPORTED)
+	add_library(Boost::program_options ALIAS boost_program_options)
+	set_property(TARGET boost_program_options PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_program_options.a)
+	add_dependencies(boost_program_options Boost)
 endif()
 
 CHECK_INCLUDE_FILE_CXX("toml++/toml.h" HAVE_TOMLPLUSPLUS)

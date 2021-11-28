@@ -61,11 +61,10 @@ Should you have come this far and still have the motivation to try distplusplus 
 
 - server:
 	- similar to distcc, the server uses a list of allowed compilers implemented as symlinks. It scans both `/usr/lib/distcc` and `/usr/libexec/distplusplus` for links. Please note that this process is NOT yet fully robust: distplusplus-server does not yet check whether the directory in question is writeable by other users, which would allow injecting binaries for remote code execution
-	- the log level can be set via the environment variable `DISTPLUSPLUS_LOG_LEVEL`. Recognized levels are `trace, debug, info, warning, error, fatal`. The default log level is `warning`.
+	- the log level can be set via the environment variable `DISTPLUSPLUS_LOG_LEVEL` or the --log-level argument. Environment takes precedence over command line argument. Recognized levels are `trace, debug, info, warning, error, fatal`. The default log level is `warning`.
         - a lot of events are not properly logged yet - you may not get useful metrics or debugging assistance from this.
-	- the listen address is configured via the `DISTPLUSPLUS_LISTEN_ADDRESS` environment variable as a `ip:port` string.
+	- the listen address is configured via the `DISTPLUSPLUS_LISTEN_ADDRESS` environment variable or the --listen-address argument as a `ip:port` string. Environment takes precedence over command line argument.
 		The string is directly parsed by gRPC. See [gRPC docs](https://grpc.github.io/grpc/cpp/md_doc_naming.html) for details.
-		- this will be done via a command line argument in the future.
 - client:
 	- usage is identical to distcc: either prefix the compiler with distplusplus or call it directly via a symlink in `/usr/libexec/distplusplus`
 	- the log level can be set via the environment variable `DISTPLUSPLUS_LOG_LEVEL`. Recognized levels are `trace, debug, info, warning, error, fatal`. The default log level is `warning`.

@@ -2,6 +2,7 @@
 #include "server.hpp"
 
 #include <boost/log/trivial.hpp>
+#include <boost/program_options.hpp>
 #include <chrono>
 #include <climits>
 #include <csignal>
@@ -34,14 +35,44 @@ static void signalReaper(const std::stop_token &token, grpc::Server *server) {
 	server->Shutdown();
 }
 
-int main() {
-	distplusplus::common::initBoostLogging();
-	char *listenAddr = getenv("DISTPLUSPLUS_LISTEN_ADDRESS");
-	if (listenAddr == nullptr) {
-		BOOST_LOG_TRIVIAL(error) << "no listen address set - see DISTPLUSPLUS_LISTEN_ADDRESS";
+int main(int argc, char *argv[]) {
+	const unsigned int coreCount = std::thread::hardware_concurrency();
+	if (coreCount == 0) {
+		BOOST_LOG_TRIVIAL(fatal) << "failed to detect number of cores";
 		exit(1);
 	}
+	boost::program_options::options_description desc;
+	// clang-format off
+	desc.add_options()
+		("help", "show this help")
+		("jobs", boost::program_options::value<unsigned int>()->default_value(coreCount), "number of maximum jobs being processed")
+		("log-level", boost::program_options::value<std::string>(), "log level")
+		("listen-address", boost::program_options::value<std::string>()->default_value("127.0.0.1:3633"), "listen adddress")
+	;
+	// clang-format on
+	boost::program_options::variables_map varMap;
+	boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), varMap);
+	boost::program_options::notify(varMap);
+
+	if (varMap.count("help") != 0) {
+		std::cout << desc << std::endl;
+		exit(0);
+	}
+
+	if (varMap.count("log-level") != 0) {
+		const std::string logLevel = varMap["log-level"].as<std::string>();
+		distplusplus::common::initBoostLogging(logLevel);
+	} else {
+		distplusplus::common::initBoostLogging();
+	}
+
+	std::string listenAddr = varMap["listen-address"].as<std::string>();
+	char *listenAddrEnv = getenv("DISTPLUSPLUS_LISTEN_ADDRESS");
+	if (listenAddrEnv != nullptr) {
+		listenAddr = listenAddrEnv;
+	}
 	BOOST_LOG_TRIVIAL(info) << "listening on " << listenAddr;
+
 	Server service;
 	grpc::ServerBuilder builder;
 	builder.SetMaxReceiveMessageSize(INT_MAX);

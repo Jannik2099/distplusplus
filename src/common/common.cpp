@@ -8,6 +8,7 @@
 #include <cstring>
 #include <fstream>
 #include <gsl/gsl_util>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <system_error>
@@ -19,11 +20,11 @@ using std::filesystem::filesystem_error;
 
 namespace distplusplus::common {
 
-void initBoostLogging() {
+static void initBoostLoggingCore(const std::optional<std::string> &logLevelOpt) {
 	const char *ret = getenv("DISTPLUSPLUS_LOG_LEVEL");
 	std::string logLevel;
 	if (ret == nullptr) {
-		logLevel = "warning";
+		logLevel = logLevelOpt.value_or("warning");
 	} else {
 		logLevel = ret;
 	}
@@ -45,6 +46,16 @@ void initBoostLogging() {
 		BOOST_LOG_TRIVIAL(fatal) << errorMessage;
 		throw std::invalid_argument(errorMessage);
 	}
+}
+
+void initBoostLogging() {
+	const std::optional<std::string> logLevelOpt = {};
+	initBoostLoggingCore(logLevelOpt);
+}
+
+void initBoostLogging(const std::string &level) {
+	const std::optional<std::string> logLevelOpt = level;
+	initBoostLoggingCore(logLevelOpt);
 }
 
 ScopeGuard::ScopeGuard(std::function<void()> atexit) : atexit(std::move(atexit)) {}

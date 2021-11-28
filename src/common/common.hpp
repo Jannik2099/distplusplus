@@ -32,6 +32,7 @@ namespace distplusplus::common {
 }
 
 void initBoostLogging();
+void initBoostLogging(const std::string &level);
 
 template <class T, std::size_t N = std::dynamic_extent> class BoundsSpan final : private std::span<T, N> {
 public:
