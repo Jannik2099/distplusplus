@@ -36,7 +36,7 @@ public:
 class Server final : public distplusplus::CompilationServer::Service {
 private:
 	void reservationReaper();
-	const std::uint64_t jobsMax = 100;
+	const std::uint64_t jobsMax;
 	std::atomic<std::uint64_t> jobsRunning = 0;
 	std::multiset<_internal::reservationType, _internal::ReservationCompare> reservations;
 	std::mutex reservationLock;
@@ -47,7 +47,8 @@ public:
 						 distplusplus::ReservationAnswer *answer) final;
 	grpc::Status Distribute(grpc::ServerContext *context, const distplusplus::CompileRequest *request,
 							distplusplus::CompileAnswer *answer) final;
-	Server() = default;
+	Server() = delete;
+	Server(std::uint64_t maxJobs);
 	~Server() final = default;
 	Server(const Server &) = delete;
 	Server(Server &&) = delete;

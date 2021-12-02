@@ -6,6 +6,7 @@
 #include <chrono>
 #include <climits>
 #include <csignal>
+#include <cstdint>
 #include <cstdlib>
 #include <grpcpp/security/server_credentials.h>
 #include <grpcpp/server.h>
@@ -36,7 +37,7 @@ static void signalReaper(const std::stop_token &token, grpc::Server *server) {
 }
 
 int main(int argc, char *argv[]) {
-	const unsigned int coreCount = std::thread::hardware_concurrency();
+	const std::uint64_t coreCount = std::thread::hardware_concurrency();
 	if (coreCount == 0) {
 		BOOST_LOG_TRIVIAL(fatal) << "failed to detect number of cores";
 		exit(1);
@@ -45,7 +46,7 @@ int main(int argc, char *argv[]) {
 	// clang-format off
 	desc.add_options()
 		("help", "show this help")
-		("jobs", boost::program_options::value<unsigned int>()->default_value(coreCount), "number of maximum jobs being processed")
+		("jobs", boost::program_options::value<std::uint64_t>()->default_value(coreCount), "number of maximum jobs being processed")
 		("log-level", boost::program_options::value<std::string>(), "log level")
 		("listen-address", boost::program_options::value<std::string>()->default_value("127.0.0.1:3633"), "listen adddress")
 	;
@@ -66,6 +67,12 @@ int main(int argc, char *argv[]) {
 		distplusplus::common::initBoostLogging();
 	}
 
+	const std::uint64_t maxJobs = varMap["jobs"].as<std::uint64_t>();
+	if (maxJobs == 0) {
+		BOOST_LOG_TRIVIAL(error) << "--jobs must be greater than 0";
+		exit(1);
+	}
+
 	std::string listenAddr = varMap["listen-address"].as<std::string>();
 	char *listenAddrEnv = getenv("DISTPLUSPLUS_LISTEN_ADDRESS");
 	if (listenAddrEnv != nullptr) {
@@ -73,7 +80,7 @@ int main(int argc, char *argv[]) {
 	}
 	BOOST_LOG_TRIVIAL(info) << "listening on " << listenAddr;
 
-	Server service;
+	Server service(maxJobs);
 	grpc::ServerBuilder builder;
 	builder.SetMaxReceiveMessageSize(INT_MAX);
 	builder.SetMaxSendMessageSize(INT_MAX);

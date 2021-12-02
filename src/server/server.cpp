@@ -205,4 +205,8 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
 	}
 }
 
+Server::Server(std::uint64_t maxJobs) : jobsMax(maxJobs) {
+	distplusplus::common::assertAndRaise(maxJobs != 0, "tried to construct server with 0 max jobs");
+}
+
 } // namespace distplusplus::server
