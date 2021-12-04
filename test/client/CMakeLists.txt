@@ -5,3 +5,6 @@ add_simple_test(TestParserCheckInputFileCandidateCXX "distplusplus::client::pars
 add_simple_test(TestParserInputFileTwice "distplusplus::client::parser;distplusplus::common")
 add_simple_test(TestParserArgsFile "distplusplus::client::parser;distplusplus::common")
 add_simple_test(TestParserLocalFallback "distplusplus::client::parser;distplusplus::common")
+add_simple_test(TestParserXLang "distplusplus::client::parser;distplusplus::common")
+add_simple_test(TestParserTarget "distplusplus::client::parser;distplusplus::common")
+add_simple_test(TestParserMultiArgs "distplusplus::client::parser;distplusplus::common")
