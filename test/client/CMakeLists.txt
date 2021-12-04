@@ -8,3 +8,5 @@ add_simple_test(TestParserLocalFallback "distplusplus::client::parser;distpluspl
 add_simple_test(TestParserXLang "distplusplus::client::parser;distplusplus::common")
 add_simple_test(TestParserTarget "distplusplus::client::parser;distplusplus::common")
 add_simple_test(TestParserMultiArgs "distplusplus::client::parser;distplusplus::common")
+
+add_bash_test(TestClientCompile)

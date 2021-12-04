@@ -1,6 +1,9 @@
 add_executable(ServerMsgHelper "ServerMsgHelper.cpp")
 target_link_libraries(ServerMsgHelper distplusplus::protobuf distplusplus::grpc distplusplus::common)
 
+add_executable(MiniServer "MiniServer.cpp")
+target_link_libraries(MiniServer distplusplus::protobuf distplusplus::grpc distplusplus::common Boost::filesystem)
+
 function(add_simple_test name libraries)
 	set(filename "${CMAKE_CURRENT_SOURCE_DIR}/${name}.cpp")
 	if(NOT EXISTS ${filename})
@@ -29,7 +32,7 @@ function(add_bash_test name)
 		message(FATAL_ERROR "unit test script ${filename} does not define a runTest function")
 	endif()
 
-	add_test(NAME "${name}" COMMAND "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/BashTestLib.sh" ${filename} ${name} $<TARGET_FILE:distplusplus> $<TARGET_FILE:distplusplus-server> $<TARGET_FILE:ServerMsgHelper>)
+	add_test(NAME "${name}" COMMAND "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/BashTestLib.sh" ${filename} ${name} $<TARGET_FILE:distplusplus> $<TARGET_FILE:distplusplus-server> $<TARGET_FILE:ServerMsgHelper> $<TARGET_FILE:MiniServer>)
 	if(COVERAGE)
 		set_property(TEST "${name}" APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${name}-client.profraw")
 		set_property(TEST "${name}" APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${name}-server.profraw")
