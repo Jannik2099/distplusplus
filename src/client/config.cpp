@@ -39,6 +39,13 @@ static toml::table getConfigFile() {
 
 static std::vector<std::string> getServers(const toml::table &configFile) {
 	std::vector<std::string> ret;
+
+	const char *listenAddrEnv = getenv("DISTPLUSPLUS_LISTEN_ADDRESS");
+	if (listenAddrEnv != nullptr) {
+		ret.emplace_back(listenAddrEnv);
+		return ret;
+	}
+
 	const toml::array &serverArray = *configFile.get_as<toml::array>("servers");
 	for (const auto &server : serverArray) {
 		ret.push_back(server.as_string()->get());
