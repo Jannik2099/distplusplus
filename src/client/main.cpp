@@ -41,7 +41,14 @@ static int func(common::BoundsSpan<std::string_view> &argv) {
 
 	auto myspan = argv.subspan(compilerPos + 1);
 	auto &spanref = myspan;
-	const parser::Parser parser(spanref);
+	const parser::Parser &parser = [&spanref]() {
+		try {
+			return parser::Parser(spanref);
+		} catch (const parser::ParserError &e) {
+			BOOST_LOG_TRIVIAL(warning) << "caught error in parser: \"" << e.what() << "\" - trying local fallback";
+			throw FallbackSignal();
+		}
+	}();
 	std::vector<std::string_view> args = parser.args();
 	std::list<std::string> argsStore;
 
