@@ -10,6 +10,7 @@ function runTest() {
 	${CLIENT} "cc" "-c" "${SRCFILE}"
 	RET=$?
 	kill ${PID}
+	rm "${SRCFILE}"
 	if [[ "${RET}" == "0" ]]; then
 		return 0
 	fi
