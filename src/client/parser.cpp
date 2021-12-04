@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <array>
+#include <boost/log/trivial.hpp>
 #include <cstdlib>
 #include <execution>
 #include <filesystem>
@@ -28,13 +29,15 @@ void Parser::checkInputFileCandidate(const std::string_view &file) {
 	const path extension = filePath.extension();
 	if (std::find(inputFileExtension.begin(), inputFileExtension.end(), extension) != inputFileExtension.end()) {
 		if (!_infile.empty()) {
-			throw ParserError(*this, "multiple input files parsed: " + _infile.string() + " & " + std::string(file));
+			throw ParserError("multiple input files parsed: " + _infile.string() + " & " + std::string(file));
 		}
 		// language can be overridden with -x
 		if (_language == Language::NONE) {
 			if (std::find(inputFileExtensionC.begin(), inputFileExtensionC.end(), extension) != inputFileExtensionC.end()) {
+				BOOST_LOG_TRIVIAL(trace) << "detected language as C from file extension ." << extension;
 				_language = Language::C;
 			} else if (std::find(inputFileExtensionCXX.begin(), inputFileExtensionCXX.end(), extension) != inputFileExtensionCXX.end()) {
+				BOOST_LOG_TRIVIAL(trace) << "detected language as C++ from file extension ." << extension;
 				_language = Language::CXX;
 			}
 		}
@@ -71,40 +74,44 @@ void Parser::parseArgs(const BoundsSpan<std::string_view> &args) { // NOLINT(mis
 		const std::string_view arg = args[i];
 		if (std::any_of(unseq, singleArgsNoDistribute.begin(), singleArgsNoDistribute.end(),
 						[&](const auto &arg) { return args[i] == arg; })) {
+			BOOST_LOG_TRIVIAL(info) << "cannot distribute because of arg " << arg;
 			throw FallbackSignal();
 		}
 		if (std::any_of(unseq, singleArgsNoDistributeStartsWith.begin(), singleArgsNoDistributeStartsWith.end(),
 						[&](const auto &arg) { return args[i].starts_with(arg); })) {
+			BOOST_LOG_TRIVIAL(info) << "cannot distribute because of arg " << arg;
 			throw FallbackSignal();
 		}
 		if (std::any_of(unseq, multiArgsNoDistribute.begin(), multiArgsNoDistribute.end(),
 						[&](const auto &arg) { return args[i] == arg; })) {
+			BOOST_LOG_TRIVIAL(info) << "cannot distribute because of arg " << arg;
 			throw FallbackSignal();
 		}
 		// we assume files do not start with -
 		if (arg.starts_with("@")) {
 			const path argsFile = arg.substr(1);
 			if (!std::filesystem::is_regular_file(argsFile)) {
-				throw ParserError(*this, "argument file: " + std::string(arg) + " doesn't seem to exist");
+				throw ParserError("argument file: " + std::string(arg) + " doesn't seem to exist");
 			}
 			readArgsFile(argsFile);
 		} else if (arg == "-o") {
 			if (i + 1 == args.size()) {
-				throw ParserError(*this, "output file specifier is the last argument");
+				throw ParserError("output file specifier is the last argument");
 			}
 			if (!_outfile.empty()) {
-				throw ParserError(*this, "multiple output files parsed: " + _outfile.string() + " & " + std::string(args[i]));
+				throw ParserError("multiple output files parsed: " + _outfile.string() + " & " + std::string(args[i]));
 			}
 			i++;
 			_outfile = args[i];
 		} else if (arg == "-c" || arg == "-S") {
 			_args.push_back(arg);
 			if (!_canDistribute.has_value()) {
+				BOOST_LOG_TRIVIAL(trace) << "can distribute because of arg " << arg;
 				_canDistribute = true;
 			}
 		} else if (arg == "-x") {
 			if (i + 1 == args.size()) {
-				throw ParserError(*this, "multi-arg -x is the last argument");
+				throw ParserError("multiArg -x is the last argument");
 			}
 			_args.push_back(args[i]);
 			i++;
@@ -114,11 +121,12 @@ void Parser::parseArgs(const BoundsSpan<std::string_view> &args) { // NOLINT(mis
 			} else if (std::find(xArgsCXX.begin(), xArgsCXX.end(), args[i]) != xArgsCXX.end()) {
 				_language = Language::CXX;
 			} else {
+				BOOST_LOG_TRIVIAL(warning) << "uncategorized -x option: \"-x " << args[i] << "\" - cannot distribute";
 				_canDistribute = false;
 			}
 		} else if (arg == "-target") {
 			if (i + 1 == args.size()) {
-				throw ParserError(*this, "clang -target is the last argument");
+				throw ParserError("clang -target is the last argument");
 			}
 			_args.push_back(arg);
 			i++;
@@ -132,7 +140,7 @@ void Parser::parseArgs(const BoundsSpan<std::string_view> &args) { // NOLINT(mis
 			_args.push_back(arg);
 		} else if (std::find(multiArgsCPP.begin(), multiArgsCPP.end(), arg) != multiArgsCPP.end()) {
 			if (i + 1 == args.size()) {
-				throw ParserError(*this, "multi argument " + std::string(arg) + " is the last argument");
+				throw ParserError("multi argument " + std::string(arg) + " is the last argument");
 			}
 			_args.push_back(args[i]);
 			i++;
@@ -157,13 +165,13 @@ Parser::Parser(BoundsSpan<std::string_view> &args) {
 		return;
 	}
 	if (_infile.empty()) {
-		throw ParserError(*this, "input file not specified or does not exist");
+		throw ParserError("input file not specified or does not exist");
 	}
 	if (_outfile.empty()) {
 		_outfile = std::string(_infile.stem()) + ".o";
 	}
 	if (_language == Language::NONE) {
-		throw ParserError(*this, "internal error: failed to determine language");
+		throw ParserError("failed to determine language");
 	}
 }
 
@@ -177,27 +185,8 @@ const std::vector<std::string_view> &Parser::args() const { return _args; }
 
 bool Parser::canDistribute() const { return _canDistribute.value(); }
 
-ParserError::ParserError(const distplusplus::client::parser::Parser &parser, const std::string &preamble) noexcept {
-	init(parser, preamble);
-}
+ParserError::ParserError(std::string message) noexcept : message(std::move(message)) {}
 
-void ParserError::init(const Parser &parser, const std::string &preamble) {
-	error.append("error during parsing");
-	if (!preamble.empty()) {
-		error.append(": ");
-		error.append(preamble);
-	}
-	error.append("\n");
-
-	error.append("infile: ");
-	error.append((!parser.infile().empty() ? parser.infile() : "not found"));
-	error.append("\n");
-
-	error.append("outfile: ");
-	error.append((!parser.outfile().empty() ? parser.outfile() : "not found"));
-	error.append("\n");
-}
-
-const char *ParserError::what() const noexcept { return error.c_str(); }
+const char *ParserError::what() const noexcept { return message.c_str(); }
 
 } // namespace distplusplus::client::parser

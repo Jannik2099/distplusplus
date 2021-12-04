@@ -57,12 +57,10 @@ public:
 
 class ParserError final : public std::exception {
 private:
-	std::string error;
-	void init(const Parser &parser, const std::string &preamble);
+	const std::string message;
 
 public:
-	ParserError(const Parser &parser, const std::string &preamble) noexcept;
-
+	ParserError(std::string message) noexcept;
 	[[nodiscard]] const char *what() const noexcept final;
 };
 
