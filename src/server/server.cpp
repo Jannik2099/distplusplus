@@ -10,6 +10,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <exception>
+#include <fstream>
 #include <functional>
 #include <google/protobuf/util/json_util.h>
 #include <iostream>
