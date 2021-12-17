@@ -239,7 +239,7 @@ endif()
 CHECK_INCLUDE_FILE_CXX("toml++/toml.h" HAVE_TOMLPLUSPLUS)
 if(NOT HAVE_TOMLPLUSPLUS)
 	message(STATUS "system tomlplusplus not found, using bundled version")
-	include_directories("third_party/tomlplusplus/include")
+	include_directories(SYSTEM "third_party/tomlplusplus/include")
 endif()
 
 execute_process(
@@ -251,7 +251,7 @@ endif()
 add_compile_definitions("DISTPLUSPLUS_BUILD_TARGET=${DISTPLUSPLUS_BUILD_TARGET}")
 
 include_directories("src")
-include_directories(${CMAKE_BINARY_DIR}/protos)
+include_directories(SYSTEM ${CMAKE_BINARY_DIR}/protos)
 add_subdirectory("protos")
 add_subdirectory("src/common")
 add_subdirectory("src/client")
