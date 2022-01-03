@@ -25,163 +25,163 @@ using distplusplus::common::ProcessHelper;
 using distplusplus::common::Tempfile;
 
 static int func(common::BoundsSpan<std::string_view> &argv) { // NOLINT(readability-function-cognitive-complexity)
-	if (argv.size() == 1 && std::filesystem::path(argv[0]).stem() == "distplusplus") {
-		BOOST_LOG_TRIVIAL(error) << "distplusplus invoked without any arguments";
-		return -1;
-	}
-	const int compilerPos = (std::filesystem::path(argv[0]).stem() == "distplusplus") ? 1 : 0;
-	std::string compilerName = std::filesystem::path(argv[compilerPos]).stem();
-	const std::string cwd = std::filesystem::current_path();
+    if (argv.size() == 1 && std::filesystem::path(argv[0]).stem() == "distplusplus") {
+        BOOST_LOG_TRIVIAL(error) << "distplusplus invoked without any arguments";
+        return -1;
+    }
+    const int compilerPos = (std::filesystem::path(argv[0]).stem() == "distplusplus") ? 1 : 0;
+    std::string compilerName = std::filesystem::path(argv[compilerPos]).stem();
+    const std::string cwd = std::filesystem::current_path();
 
-	const distplusplus::CompilerType compilerType = distplusplus::common::mapCompiler(compilerName);
-	if (compilerType == distplusplus::CompilerType::UNKNOWN) {
-		// TODO: see how far this gets
-		BOOST_LOG_TRIVIAL(warning) << "failed to recognize compiler " << compilerName << " , attempting to proceed";
-	}
+    const distplusplus::CompilerType compilerType = distplusplus::common::mapCompiler(compilerName);
+    if (compilerType == distplusplus::CompilerType::UNKNOWN) {
+        // TODO: see how far this gets
+        BOOST_LOG_TRIVIAL(warning) << "failed to recognize compiler " << compilerName << " , attempting to proceed";
+    }
 
-	auto myspan = argv.subspan(compilerPos + 1);
-	auto &spanref = myspan;
-	const parser::Parser &parser = [&spanref]() {
-		try {
-			return parser::Parser(spanref);
-		} catch (const parser::ParserError &e) {
-			BOOST_LOG_TRIVIAL(warning) << "caught error in parser: \"" << e.what() << "\" - trying local fallback";
-			throw FallbackSignal();
-		}
-	}();
-	std::vector<std::string_view> args = parser.args();
-	std::list<std::string> argsStore;
+    auto myspan = argv.subspan(compilerPos + 1);
+    auto &spanref = myspan;
+    const parser::Parser &parser = [&spanref]() {
+        try {
+            return parser::Parser(spanref);
+        } catch (const parser::ParserError &e) {
+            BOOST_LOG_TRIVIAL(warning) << "caught error in parser: \"" << e.what() << "\" - trying local fallback";
+            throw FallbackSignal();
+        }
+    }();
+    std::vector<std::string_view> args = parser.args();
+    std::list<std::string> argsStore;
 
-	if (!parser.canDistribute()) {
-		throw FallbackSignal();
-	}
+    if (!parser.canDistribute()) {
+        throw FallbackSignal();
+    }
 
 #define XSTRINGIFY(s) STRINGIFY(s) // NOLINT
-#define STRINGIFY(s) #s			   // NOLINT
+#define STRINGIFY(s) #s            // NOLINT
 
-	if (compilerType == distplusplus::CompilerType::clang) {
-		if (!parser.target().has_value()) {
-			argsStore.emplace_back(std::string("-target"));
-			args.emplace_back(std::string_view(argsStore.back()));
-			argsStore.emplace_back(std::string(XSTRINGIFY(DISTPLUSPLUS_BUILD_TARGET)));
-			args.emplace_back(std::string_view(argsStore.back()));
-			BOOST_LOG_TRIVIAL(debug) << "set clang target to " << XSTRINGIFY(DISTPLUSPLUS_BUILD_TARGET);
-		}
-	} else if (compilerType == distplusplus::CompilerType::gcc) {
-		const std::string gccPrefix(XSTRINGIFY(DISTPLUSPLUS_BUILD_TARGET));
-		// only override unspecific gcc ( + version), i.e. not if user set target
-		if (compilerName.starts_with("g++")) {
-			compilerName = gccPrefix + "-" + compilerName;
-			BOOST_LOG_TRIVIAL(debug) << "set unspecified g++ target to " << compilerName;
-		} else if (compilerName.starts_with("gcc")) {
-			compilerName = gccPrefix + "-" + compilerName;
-			BOOST_LOG_TRIVIAL(debug) << "set unspecified gcc target to " << compilerName;
-		}
-	}
-	BOOST_LOG_TRIVIAL(trace) << "args:" << [&args]() {
-		std::string ret;
-		for (const auto &arg : args) {
-			ret.append(" ");
-			ret.append(std::string(arg));
-		}
-		return ret;
-	}();
+    if (compilerType == distplusplus::CompilerType::clang) {
+        if (!parser.target().has_value()) {
+            argsStore.emplace_back(std::string("-target"));
+            args.emplace_back(std::string_view(argsStore.back()));
+            argsStore.emplace_back(std::string(XSTRINGIFY(DISTPLUSPLUS_BUILD_TARGET)));
+            args.emplace_back(std::string_view(argsStore.back()));
+            BOOST_LOG_TRIVIAL(debug) << "set clang target to " << XSTRINGIFY(DISTPLUSPLUS_BUILD_TARGET);
+        }
+    } else if (compilerType == distplusplus::CompilerType::gcc) {
+        const std::string gccPrefix(XSTRINGIFY(DISTPLUSPLUS_BUILD_TARGET));
+        // only override unspecific gcc ( + version), i.e. not if user set target
+        if (compilerName.starts_with("g++")) {
+            compilerName = gccPrefix + "-" + compilerName;
+            BOOST_LOG_TRIVIAL(debug) << "set unspecified g++ target to " << compilerName;
+        } else if (compilerName.starts_with("gcc")) {
+            compilerName = gccPrefix + "-" + compilerName;
+            BOOST_LOG_TRIVIAL(debug) << "set unspecified gcc target to " << compilerName;
+        }
+    }
+    BOOST_LOG_TRIVIAL(trace) << "args:" << [&args]() {
+        std::string ret;
+        for (const auto &arg : args) {
+            ret.append(" ");
+            ret.append(std::string(arg));
+        }
+        return ret;
+    }();
 
-	const std::filesystem::path &cppInfile = parser.infile();
-	const std::string fileName = cppInfile.filename();
-	const Tempfile cppOutfile(std::string(parser.infile().stem()) + ".i");
+    const std::filesystem::path &cppInfile = parser.infile();
+    const std::string fileName = cppInfile.filename();
+    const Tempfile cppOutfile(std::string(parser.infile().stem()) + ".i");
 
-	// This is rather ugly and should probably be wrapped in a helper class
-	argsStore.emplace_back(std::string(cppInfile));
-	args.emplace_back(argsStore.back());
-	argsStore.emplace_back("-o");
-	args.emplace_back(argsStore.back());
-	argsStore.emplace_back(std::string(cppOutfile));
-	args.emplace_back(argsStore.back());
-	argsStore.emplace_back("-E");
-	args.emplace_back(argsStore.back());
-	std::vector<std::string> argsVec;
-	argsVec.reserve(args.size());
-	for (const auto &arg : args) {
-		argsVec.emplace_back(std::string(arg));
-	}
-	ProcessHelper Preprocessor(boost::process::search_path(compilerName), argsVec);
-	args.pop_back();
-	args.pop_back();
-	args.pop_back();
-	args.pop_back();
-	argsStore.pop_back();
-	argsStore.pop_back();
-	argsStore.pop_back();
-	argsStore.pop_back();
+    // This is rather ugly and should probably be wrapped in a helper class
+    argsStore.emplace_back(std::string(cppInfile));
+    args.emplace_back(argsStore.back());
+    argsStore.emplace_back("-o");
+    args.emplace_back(argsStore.back());
+    argsStore.emplace_back(std::string(cppOutfile));
+    args.emplace_back(argsStore.back());
+    argsStore.emplace_back("-E");
+    args.emplace_back(argsStore.back());
+    std::vector<std::string> argsVec;
+    argsVec.reserve(args.size());
+    for (const auto &arg : args) {
+        argsVec.emplace_back(std::string(arg));
+    }
+    ProcessHelper Preprocessor(boost::process::search_path(compilerName), argsVec);
+    args.pop_back();
+    args.pop_back();
+    args.pop_back();
+    args.pop_back();
+    argsStore.pop_back();
+    argsStore.pop_back();
+    argsStore.pop_back();
+    argsStore.pop_back();
 
-	argsStore.emplace_back(parser.modeArg());
-	args.emplace_back(argsStore.back());
+    argsStore.emplace_back(parser.modeArg());
+    args.emplace_back(argsStore.back());
 
-	std::ifstream cppOutfileStream(cppOutfile);
-	std::string cppOutfileContent((std::istreambuf_iterator<char>(cppOutfileStream)), std::istreambuf_iterator<char>());
+    std::ifstream cppOutfileStream(cppOutfile);
+    std::string cppOutfileContent((std::istreambuf_iterator<char>(cppOutfileStream)), std::istreambuf_iterator<char>());
 
-	const std::string &preprocessorStderr = Preprocessor.get_stderr();
-	if (!preprocessorStderr.empty()) {
-		std::cerr << preprocessorStderr << std::endl;
-	}
+    const std::string &preprocessorStderr = Preprocessor.get_stderr();
+    if (!preprocessorStderr.empty()) {
+        std::cerr << preprocessorStderr << std::endl;
+    }
 
-	Client client;
-	const distplusplus::CompileAnswer answer = client.send(compilerName, argsVec, fileName, cppOutfileContent, cwd);
-	if (!answer.outputfile().content().empty()) {
-		std::ofstream outStream(parser.outfile());
-		outStream << answer.outputfile().content();
-		outStream.close();
-	}
-	if (!answer.stderr().empty()) {
-		std::cout << answer.stderr() << std::endl;
-	}
-	if (!answer.stdout().empty()) {
-		std::cout << answer.stdout() << std::endl;
-	}
-	return answer.returncode();
+    Client client;
+    const distplusplus::CompileAnswer answer = client.send(compilerName, argsVec, fileName, cppOutfileContent, cwd);
+    if (!answer.outputfile().content().empty()) {
+        std::ofstream outStream(parser.outfile());
+        outStream << answer.outputfile().content();
+        outStream.close();
+    }
+    if (!answer.stderr().empty()) {
+        std::cout << answer.stderr() << std::endl;
+    }
+    if (!answer.stdout().empty()) {
+        std::cout << answer.stdout() << std::endl;
+    }
+    return answer.returncode();
 }
 
 int main(int argc, char *argv[]) { // NOLINT(bugprone-exception-escape)
-	distplusplus::common::initBoostLogging();
-	std::vector<std::string_view> viewVec;
-	for (const auto &arg : BoundsSpan(argv, argc)) {
-		viewVec.emplace_back(std::string_view(arg));
-	}
-	common::BoundsSpan argsSpan(viewVec);
-	int ret = 0;
-	// uncaught exceptions are not guaranteed to invoke destructors
-	// hence catch and rethrow
-	try {
-		ret = func(argsSpan);
-	} catch (FallbackSignal) {
-		const int compilerPos = (std::filesystem::path(argsSpan[0]).stem() == "distplusplus") ? 1 : 0;
-		std::string compilerPath(argsSpan[compilerPos]);
-		// otherwise we would recurse on ourself
-		// TODO: the conversion to path & c_str is kinda hacky, should probably fix it at some point
-		if (compilerPos == 0) {
-			if (compilerPath.starts_with("/usr/libexec/distplusplus") || compilerPath.starts_with("/usr/lib/distcc")) {
-				compilerPath = boost::process::search_path(std::filesystem::path(compilerPath).stem().c_str()).c_str();
-			}
-		}
-		if (std::filesystem::path(compilerPath).stem() == compilerPath) {
-			compilerPath = boost::process::search_path(std::filesystem::path(compilerPath).stem().c_str()).c_str();
-		}
-		std::vector<std::string> args;
-		for (const auto &arg : argsSpan.subspan(compilerPos + 1)) {
-			args.emplace_back(arg);
-		}
+    distplusplus::common::initBoostLogging();
+    std::vector<std::string_view> viewVec;
+    for (const auto &arg : BoundsSpan(argv, argc)) {
+        viewVec.emplace_back(std::string_view(arg));
+    }
+    common::BoundsSpan argsSpan(viewVec);
+    int ret = 0;
+    // uncaught exceptions are not guaranteed to invoke destructors
+    // hence catch and rethrow
+    try {
+        ret = func(argsSpan);
+    } catch (FallbackSignal) {
+        const int compilerPos = (std::filesystem::path(argsSpan[0]).stem() == "distplusplus") ? 1 : 0;
+        std::string compilerPath(argsSpan[compilerPos]);
+        // otherwise we would recurse on ourself
+        // TODO: the conversion to path & c_str is kinda hacky, should probably fix it at some point
+        if (compilerPos == 0) {
+            if (compilerPath.starts_with("/usr/libexec/distplusplus") || compilerPath.starts_with("/usr/lib/distcc")) {
+                compilerPath = boost::process::search_path(std::filesystem::path(compilerPath).stem().c_str()).c_str();
+            }
+        }
+        if (std::filesystem::path(compilerPath).stem() == compilerPath) {
+            compilerPath = boost::process::search_path(std::filesystem::path(compilerPath).stem().c_str()).c_str();
+        }
+        std::vector<std::string> args;
+        for (const auto &arg : argsSpan.subspan(compilerPos + 1)) {
+            args.emplace_back(arg);
+        }
 
-		if (!std::filesystem::exists(compilerPath)) {
-			BOOST_LOG_TRIVIAL(error) << "specified compiler " << argsSpan[compilerPos] << " not found";
-			return -1;
-		}
-		ProcessHelper localInvocation(compilerPath, args);
-		std::cerr << localInvocation.get_stderr() << std::endl;
-		std::cout << localInvocation.get_stdout() << std::endl;
-		return localInvocation.returnCode();
-	} catch (...) {
-		throw;
-	}
-	return ret;
+        if (!std::filesystem::exists(compilerPath)) {
+            BOOST_LOG_TRIVIAL(error) << "specified compiler " << argsSpan[compilerPos] << " not found";
+            return -1;
+        }
+        ProcessHelper localInvocation(compilerPath, args);
+        std::cerr << localInvocation.get_stderr() << std::endl;
+        std::cout << localInvocation.get_stdout() << std::endl;
+        return localInvocation.returnCode();
+    } catch (...) {
+        throw;
+    }
+    return ret;
 }

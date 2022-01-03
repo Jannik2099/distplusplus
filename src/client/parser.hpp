@@ -28,40 +28,42 @@ namespace distplusplus::client::parser {
 
 class Parser final {
 private:
-	std::vector<std::string_view> _args;
-	path _infile;
-	path _outfile;
-	std::string _compiler;
-	std::optional<std::string> _target;
-	std::optional<bool> _canDistribute;
-	Language _language = Language::NONE;
+    std::vector<std::string_view> _args;
+    std::string _modeArg;
+    path _infile;
+    path _outfile;
+    std::string _compiler;
+    std::optional<std::string> _target;
+    std::optional<bool> _canDistribute;
+    Language _language = Language::NONE;
 
-	void checkInputFileCandidate(const std::string_view &file);
-	void readArgsFile(const path &argsFile);
-	void parseArgs(const BoundsSpan<std::string_view> &args);
+    void checkInputFileCandidate(const std::string_view &file);
+    void readArgsFile(const path &argsFile);
+    void parseArgs(const BoundsSpan<std::string_view> &args);
 
 public:
-	explicit Parser(BoundsSpan<std::string_view> &args);
-	Parser(const Parser &) = delete;
-	Parser(Parser &&) = delete;
-	Parser operator=(const Parser &) = delete;
-	Parser operator=(Parser &&) = delete;
-	~Parser() = default;
-	[[nodiscard]] const path &infile() const;
-	[[nodiscard]] const path &outfile() const;
-	[[nodiscard]] const std::optional<std::string> &target() const;
-	// TODO: return BoundsSpan?
-	[[nodiscard]] const std::vector<std::string_view> &args() const;
-	[[nodiscard]] bool canDistribute() const;
+    explicit Parser(BoundsSpan<std::string_view> &args);
+    Parser(const Parser &) = delete;
+    Parser(Parser &&) = delete;
+    Parser operator=(const Parser &) = delete;
+    Parser operator=(Parser &&) = delete;
+    ~Parser() = default;
+    [[nodiscard]] const path &infile() const;
+    [[nodiscard]] const path &outfile() const;
+    [[nodiscard]] const std::optional<std::string> &target() const;
+    // TODO: return BoundsSpan?
+    [[nodiscard]] const std::vector<std::string_view> &args() const;
+    [[nodiscard]] const std::string &modeArg() const;
+    [[nodiscard]] bool canDistribute() const;
 };
 
 class ParserError final : public std::exception {
 private:
-	const std::string message;
+    const std::string message;
 
 public:
-	ParserError(std::string message) noexcept;
-	[[nodiscard]] const char *what() const noexcept final;
+    ParserError(std::string message) noexcept;
+    [[nodiscard]] const char *what() const noexcept final;
 };
 
 } // namespace distplusplus::client::parser

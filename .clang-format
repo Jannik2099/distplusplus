@@ -3,6 +3,5 @@ IncludeBlocks: Regroup
 IndentWidth: 4
 TabWidth: 4
 AccessModifierOffset: -4
-UseTab: Always
 
 ColumnLimit: 140
