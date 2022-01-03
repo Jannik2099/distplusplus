@@ -24,7 +24,7 @@ using namespace distplusplus::client;
 using distplusplus::common::ProcessHelper;
 using distplusplus::common::Tempfile;
 
-static int func(common::BoundsSpan<std::string_view> &argv) {
+static int func(common::BoundsSpan<std::string_view> &argv) { // NOLINT(readability-function-cognitive-complexity)
 	if (argv.size() == 1 && std::filesystem::path(argv[0]).stem() == "distplusplus") {
 		BOOST_LOG_TRIVIAL(error) << "distplusplus invoked without any arguments";
 		return -1;
@@ -90,25 +90,33 @@ static int func(common::BoundsSpan<std::string_view> &argv) {
 	const std::filesystem::path &cppInfile = parser.infile();
 	const std::string fileName = cppInfile.filename();
 	const Tempfile cppOutfile(std::string(parser.infile().stem()) + ".i");
+
+	// This is rather ugly and should probably be wrapped in a helper class
 	argsStore.emplace_back(std::string(cppInfile));
 	args.emplace_back(argsStore.back());
 	argsStore.emplace_back("-o");
 	args.emplace_back(argsStore.back());
 	argsStore.emplace_back(std::string(cppOutfile));
 	args.emplace_back(argsStore.back());
-	const std::string cpp = (compilerType == distplusplus::CompilerType::clang) ? "clang-cpp" : "cpp";
+	argsStore.emplace_back("-E");
+	args.emplace_back(argsStore.back());
 	std::vector<std::string> argsVec;
 	argsVec.reserve(args.size());
 	for (const auto &arg : args) {
 		argsVec.emplace_back(std::string(arg));
 	}
-	ProcessHelper Preprocessor(boost::process::search_path(cpp), argsVec);
+	ProcessHelper Preprocessor(boost::process::search_path(compilerName), argsVec);
 	args.pop_back();
 	args.pop_back();
 	args.pop_back();
-	argsVec.pop_back();
-	argsVec.pop_back();
-	argsVec.pop_back();
+	args.pop_back();
+	argsStore.pop_back();
+	argsStore.pop_back();
+	argsStore.pop_back();
+	argsStore.pop_back();
+
+	argsStore.emplace_back(parser.modeArg());
+	args.emplace_back(argsStore.back());
 
 	std::ifstream cppOutfileStream(cppOutfile);
 	std::string cppOutfileContent((std::istreambuf_iterator<char>(cppOutfileStream)), std::istreambuf_iterator<char>());
@@ -134,7 +142,7 @@ static int func(common::BoundsSpan<std::string_view> &argv) {
 	return answer.returncode();
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) { // NOLINT(bugprone-exception-escape)
 	distplusplus::common::initBoostLogging();
 	std::vector<std::string_view> viewVec;
 	for (const auto &arg : BoundsSpan(argv, argc)) {
