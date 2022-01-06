@@ -23,7 +23,8 @@ std::vector<std::string_view> Parser::parse(const std::vector<std::string_view> 
                         [&](const auto &arg) { return args[i] == arg; })) {
             throw CannotProcessSignal("encountered non-distributable argument " + std::string(args[i]));
         }
-        if (std::any_of(unseq, singleArgsNoDistributeStartsWith.begin(), singleArgsNoDistributeStartsWith.end(),
+        if (std::any_of(unseq, singleArgsNoDistributeStartsWith.begin(),
+                        singleArgsNoDistributeStartsWith.end(),
                         [&](const auto &arg) { return args[i].starts_with(arg); })) {
             throw CannotProcessSignal("encountered non-distributable argument " + std::string(args[i]));
         }
@@ -32,7 +33,8 @@ std::vector<std::string_view> Parser::parse(const std::vector<std::string_view> 
             throw CannotProcessSignal("encountered non-distributable argument " + std::string(args[i]));
         }
         // filter out cpp flags
-        if (std::any_of(unseq, singleArgsCPP.begin(), singleArgsCPP.end(), [&](const auto &arg) { return args[i] == arg; })) {
+        if (std::any_of(unseq, singleArgsCPP.begin(), singleArgsCPP.end(),
+                        [&](const auto &arg) { return args[i] == arg; })) {
             BOOST_LOG_TRIVIAL(trace) << "filtered preprocessor argument " << args[i];
             continue;
         }
@@ -41,9 +43,11 @@ std::vector<std::string_view> Parser::parse(const std::vector<std::string_view> 
             BOOST_LOG_TRIVIAL(trace) << "filtered preprocessor argument " << args[i];
             continue;
         }
-        if (std::any_of(unseq, multiArgsCPP.begin(), multiArgsCPP.end(), [&](const auto &arg) { return args[i] == arg; })) {
+        if (std::any_of(unseq, multiArgsCPP.begin(), multiArgsCPP.end(),
+                        [&](const auto &arg) { return args[i] == arg; })) {
             if (i == args.size() - 1) {
-                throw CannotProcessSignal("tried to filter multi arg " + std::string(args[i]) + " but it is the last argument");
+                throw CannotProcessSignal("tried to filter multi arg " + std::string(args[i]) +
+                                          " but it is the last argument");
             }
             BOOST_LOG_TRIVIAL(trace) << "filtered preprocessor argument " << args[i] << " " << args[i + 1];
             i++;

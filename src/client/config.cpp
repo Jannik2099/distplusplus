@@ -60,7 +60,8 @@ static std::vector<std::string> getServers(const toml::table &configFile) {
 
 Config::Config() : _stateDir(getStateDir()), configFile(getConfigFile()), _servers(getServers(configFile)) {
     if (_servers.empty()) {
-        const std::string err_msg("config file " + *configFile.source().path + " provides empty list of hosts");
+        const std::string err_msg("config file " + *configFile.source().path +
+                                  " provides empty list of hosts");
         BOOST_LOG_TRIVIAL(error) << err_msg;
         throw std::runtime_error(err_msg);
     }

@@ -71,18 +71,21 @@ ProcessHelper::ProcessHelper(const boost::filesystem::path &program, const std::
     // a segfault in boost is really shitty to debug - assert sanity beforehand
     assertAndRaise(!program.empty(), "passed program is empty");
     assertAndRaise(program.has_filename(), "passed program " + program.string() + " is misshaped");
-    assertAndRaise(boost::filesystem::is_regular_file(program), "passed program " + program.string() + " does not exist");
+    assertAndRaise(boost::filesystem::is_regular_file(program),
+                   "passed program " + program.string() + " does not exist");
     for (const auto &arg : args) {
         assertAndRaise(!arg.empty(), "passed argument is empty");
     }
-    process = boost::process::child(program, args, env, boost::process::std_out > stdoutPipe, boost::process::std_err > stderrPipe);
+    process = boost::process::child(program, args, env, boost::process::std_out > stdoutPipe,
+                                    boost::process::std_err > stderrPipe);
     process.wait();
     _returnCode = process.exit_code();
     _stdout = std::string(std::istreambuf_iterator(stdoutPipe), {});
     _stderr = std::string(std::istreambuf_iterator(stderrPipe), {});
 }
 
-// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init) clang-tidy does not properly evaluate into the called constructor
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init) clang-tidy does not properly evaluate into the
+// called constructor
 ProcessHelper::ProcessHelper(const boost::filesystem::path &program, const std::vector<std::string> &args) {
     *this = ProcessHelper(program, args, boost::this_process::environment());
 }
@@ -139,7 +142,8 @@ Tempfile::~Tempfile() {
         std::filesystem::remove(*this);
     } catch (const filesystem_error &err) {
         if (err.code() != std::errc::no_such_file_or_directory) {
-            BOOST_LOG_TRIVIAL(fatal) << "failed to delete temporary file " << *this << " with error " << err.what();
+            BOOST_LOG_TRIVIAL(fatal) << "failed to delete temporary file " << *this << " with error "
+                                     << err.what();
             throw;
         }
     }

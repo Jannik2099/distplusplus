@@ -24,7 +24,9 @@ namespace distplusplus::server {
 
 namespace _internal {
 
-bool ReservationCompare::operator()(const reservationType &a, const reservationType &b) const { return std::get<1>(a) < std::get<1>(b); }
+bool ReservationCompare::operator()(const reservationType &a, const reservationType &b) const {
+    return std::get<1>(a) < std::get<1>(b);
+}
 
 } // namespace _internal
 
@@ -58,9 +60,8 @@ static bool sanitizeRequest(const distplusplus::CompileRequest &request) {
 // TODO: this is NOT secure yet and purely for convenience
 static bool checkCompilerAllowed(const std::string &compiler) {
     // TODO: check for dir priveleges
-    std::function<bool(const std::filesystem::directory_entry &)> checkIfSymlink = [&compiler](const auto &file) {
-        return file.is_symlink() && compiler == file.path().filename();
-    };
+    std::function<bool(const std::filesystem::directory_entry &)> checkIfSymlink =
+        [&compiler](const auto &file) { return file.is_symlink() && compiler == file.path().filename(); };
 
     bool ret1 = false;
     if (std::filesystem::is_directory("/usr/lib/distcc")) {
@@ -69,7 +70,8 @@ static bool checkCompilerAllowed(const std::string &compiler) {
     // lazy copy
     bool ret2 = false;
     if (std::filesystem::is_directory("/usr/libexec/distplusplus")) {
-        ret2 = std::ranges::any_of(std::filesystem::directory_iterator("/usr/libexec/distplusplus"), checkIfSymlink);
+        ret2 = std::ranges::any_of(std::filesystem::directory_iterator("/usr/libexec/distplusplus"),
+                                   checkIfSymlink);
     }
     return ret1 || ret2;
 }
@@ -89,13 +91,15 @@ void Server::reservationReaper() {
             const auto diff = before - after;
             jobsRunning -= diff;
             if (diff > 0) {
-                BOOST_LOG_TRIVIAL(info) << "reaped " << diff << " stale reservations - consider increasing reservation timeout";
+                BOOST_LOG_TRIVIAL(info)
+                    << "reaped " << diff << " stale reservations - consider increasing reservation timeout";
             }
         }
     }
 }
 
-grpc::Status Server::Reserve([[maybe_unused]] grpc::ServerContext *context, [[maybe_unused]] const distplusplus::Reservation *reservation,
+grpc::Status Server::Reserve([[maybe_unused]] grpc::ServerContext *context,
+                             [[maybe_unused]] const distplusplus::Reservation *reservation,
                              distplusplus::ReservationAnswer *answer) {
     try {
         if (jobsRunning < jobsMax) {
@@ -105,7 +109,8 @@ grpc::Status Server::Reserve([[maybe_unused]] grpc::ServerContext *context, [[ma
                 const std::string uuid = boost::uuids::to_string(boost::uuids::random_generator()());
                 {
                     std::lock_guard lockGuard(reservationLock);
-                    reservations.emplace_hint(reservations.end(), std::pair(uuid, std::chrono::system_clock::now()));
+                    reservations.emplace_hint(reservations.end(),
+                                              std::pair(uuid, std::chrono::system_clock::now()));
                 }
                 answer->set_uuid(uuid);
                 answer->set_success(true);
@@ -135,8 +140,9 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
         }();
         {
             std::lock_guard lockGuard(reservationLock);
-            if (std::erase_if(reservations, [&clientUUID](const _internal::reservationType &a) { return std::get<0>(a) == clientUUID; }) ==
-                0) {
+            if (std::erase_if(reservations, [&clientUUID](const _internal::reservationType &a) {
+                    return std::get<0>(a) == clientUUID;
+                }) == 0) {
                 const std::string errorMessage = "error: uuid " + clientUUID + " not in reservation list.";
                 BOOST_LOG_TRIVIAL(warning) << "client " << clientIP << " sent job but uuid " << clientUUID
                                            << " was not in reservation list";
@@ -147,14 +153,15 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
 
         // TODO: do this proper
         if (!sanitizeRequest(*request)) {
-            BOOST_LOG_TRIVIAL(warning) << "client " << clientIP << " with job " << clientUUID << " protocol violation!";
+            BOOST_LOG_TRIVIAL(warning)
+                << "client " << clientIP << " with job " << clientUUID << " protocol violation!";
             return {grpc::StatusCode::INVALID_ARGUMENT, "protocol violation"};
         }
 
         if (!checkCompilerAllowed(request->compiler())) {
             const std::string errorMessage = "error: compiler " + request->compiler() + " not in allow list";
-            BOOST_LOG_TRIVIAL(warning) << "client " << clientIP << " sent job but compiler " << request->compiler()
-                                       << " was not in allow list";
+            BOOST_LOG_TRIVIAL(warning) << "client " << clientIP << " sent job but compiler "
+                                       << request->compiler() << " was not in allow list";
             return {grpc::StatusCode::INVALID_ARGUMENT, errorMessage};
         }
 
@@ -164,7 +171,8 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
         const distplusplus::common::Tempfile inputFile(clientIPDelimited + "." + request->inputfile().name(),
                                                        request->inputfile().content());
 
-        const distplusplus::common::Tempfile outputFile(clientIPDelimited + "." + request->inputfile().name() + ".o");
+        const distplusplus::common::Tempfile outputFile(clientIPDelimited + "." +
+                                                        request->inputfile().name() + ".o");
 
         std::vector<std::string_view> preArgs(request->argument().begin(), request->argument().end());
         std::vector<std::string_view> args;
@@ -172,9 +180,11 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
             parser::Parser parser(preArgs);
             args = parser.args();
         } catch (const parser::CannotProcessSignal &signal) {
-            BOOST_LOG_TRIVIAL(warning) << "job " << clientUUID << " from host " << clientIP << " aborted due to invalid arguments:\n"
-                                       << signal.what();
-            return {grpc::StatusCode::INVALID_ARGUMENT, "job aborted due to invalid arguments:\n" + signal.what()};
+            BOOST_LOG_TRIVIAL(warning)
+                << "job " << clientUUID << " from host " << clientIP << " aborted due to invalid arguments:\n"
+                << signal.what();
+            return {grpc::StatusCode::INVALID_ARGUMENT,
+                    "job aborted due to invalid arguments:\n" + signal.what()};
         }
 
         args.emplace_back("-o");

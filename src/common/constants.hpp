@@ -59,7 +59,15 @@ static constexpr std::array multiArgsCPP [[maybe_unused]] = {
 };
 
 static constexpr std::array singleArgsCPPStartsWith [[maybe_unused]] = {
-    "-I", "-D", "-U", "-fexec-charset=", "-finput-charset=", "-fmacro-prefix-map=", "-ftabstop=", "-fwide-exec-charset=", "-Wp,",
+    "-I",
+    "-D",
+    "-U",
+    "-fexec-charset=",
+    "-finput-charset=",
+    "-fmacro-prefix-map=",
+    "-ftabstop=",
+    "-fwide-exec-charset=",
+    "-Wp,",
 };
 
 static constexpr std::array multiArgsNoDistribute [[maybe_unused]] = {
@@ -69,12 +77,22 @@ static constexpr std::array multiArgsNoDistribute [[maybe_unused]] = {
 };
 
 static constexpr std::array singleArgsNoDistribute [[maybe_unused]] = {
-    "-M", "-MM", "-E", "-dr", "-Wa,-a", "-Wa,--MD", "-fbranch-probabilities", "--coverage", "-fprofile-arcs", "-ftest-coverage",
+    "-M",
+    "-MM",
+    "-E",
+    "-dr",
+    "-Wa,-a",
+    "-Wa,--MD",
+    "-fbranch-probabilities",
+    "--coverage",
+    "-fprofile-arcs",
+    "-ftest-coverage",
 };
 
-static constexpr std::array singleArgsNoDistributeStartsWith [[maybe_unused]] = {
-    "-fplugin=", "-specs=", "-ffile-prefix-map=", "-fprofile-use", "-fauto-profile", "-finstrument-functions-exclude", "-save-temps",
-    "-time",     "-fdump"};
+static constexpr std::array singleArgsNoDistributeStartsWith
+    [[maybe_unused]] = {"-fplugin=",     "-specs=",        "-ffile-prefix-map=",
+                        "-fprofile-use", "-fauto-profile", "-finstrument-functions-exclude",
+                        "-save-temps",   "-time",          "-fdump"};
 
 static constexpr std::array inputFileExtensionC [[maybe_unused]] = {
     ".c",
@@ -86,7 +104,8 @@ static constexpr std::array inputFileExtensionCXX [[maybe_unused]] = {
 };
 
 // this could be computed via constexpr, but that's a LOT of boilerplate
-static constexpr std::array inputFileExtension [[maybe_unused]] = {".c", ".C", ".cc", ".cxx", ".cpp", ".c++", ".cp", ".CPP", ".i", ".ii"};
+static constexpr std::array inputFileExtension
+    [[maybe_unused]] = {".c", ".C", ".cc", ".cxx", ".cpp", ".c++", ".cp", ".CPP", ".i", ".ii"};
 
 static constexpr std::array xArgsC [[maybe_unused]] = {
     "c",

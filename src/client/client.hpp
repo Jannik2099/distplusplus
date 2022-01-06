@@ -25,8 +25,8 @@ private:
     QueryAnswer query(const ServerQuery &serverQuery);
 
 public:
-    CompileAnswer send(const std::string &compilerName, const std::vector<std::string> &args, const std::string &fileName,
-                       const std::string &fileContent, const std::string &cwd);
+    CompileAnswer send(const std::string &compilerName, const std::vector<std::string> &args,
+                       const std::string &fileName, const std::string &fileContent, const std::string &cwd);
     Client() = default;
 };
 

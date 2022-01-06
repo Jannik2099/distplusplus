@@ -24,7 +24,8 @@ using namespace distplusplus::client;
 using distplusplus::common::ProcessHelper;
 using distplusplus::common::Tempfile;
 
-static int func(common::BoundsSpan<std::string_view> &argv) { // NOLINT(readability-function-cognitive-complexity)
+static int
+func(common::BoundsSpan<std::string_view> &argv) { // NOLINT(readability-function-cognitive-complexity)
     if (argv.size() == 1 && std::filesystem::path(argv[0]).stem() == "distplusplus") {
         BOOST_LOG_TRIVIAL(error) << "distplusplus invoked without any arguments";
         return -1;
@@ -36,7 +37,8 @@ static int func(common::BoundsSpan<std::string_view> &argv) { // NOLINT(readabil
     const distplusplus::CompilerType compilerType = distplusplus::common::mapCompiler(compilerName);
     if (compilerType == distplusplus::CompilerType::UNKNOWN) {
         // TODO: see how far this gets
-        BOOST_LOG_TRIVIAL(warning) << "failed to recognize compiler " << compilerName << " , attempting to proceed";
+        BOOST_LOG_TRIVIAL(warning) << "failed to recognize compiler " << compilerName
+                                   << " , attempting to proceed";
     }
 
     auto myspan = argv.subspan(compilerPos + 1);
@@ -45,7 +47,8 @@ static int func(common::BoundsSpan<std::string_view> &argv) { // NOLINT(readabil
         try {
             return parser::Parser(spanref);
         } catch (const parser::ParserError &e) {
-            BOOST_LOG_TRIVIAL(warning) << "caught error in parser: \"" << e.what() << "\" - trying local fallback";
+            BOOST_LOG_TRIVIAL(warning)
+                << "caught error in parser: \"" << e.what() << "\" - trying local fallback";
             throw FallbackSignal();
         }
     }();
@@ -119,7 +122,8 @@ static int func(common::BoundsSpan<std::string_view> &argv) { // NOLINT(readabil
     args.emplace_back(argsStore.back());
 
     std::ifstream cppOutfileStream(cppOutfile);
-    std::string cppOutfileContent((std::istreambuf_iterator<char>(cppOutfileStream)), std::istreambuf_iterator<char>());
+    std::string cppOutfileContent((std::istreambuf_iterator<char>(cppOutfileStream)),
+                                  std::istreambuf_iterator<char>());
 
     const std::string &preprocessorStderr = Preprocessor.get_stderr();
     if (!preprocessorStderr.empty()) {
@@ -127,7 +131,8 @@ static int func(common::BoundsSpan<std::string_view> &argv) { // NOLINT(readabil
     }
 
     Client client;
-    const distplusplus::CompileAnswer answer = client.send(compilerName, argsVec, fileName, cppOutfileContent, cwd);
+    const distplusplus::CompileAnswer answer =
+        client.send(compilerName, argsVec, fileName, cppOutfileContent, cwd);
     if (!answer.outputfile().content().empty()) {
         std::ofstream outStream(parser.outfile());
         outStream << answer.outputfile().content();
@@ -160,12 +165,15 @@ int main(int argc, char *argv[]) { // NOLINT(bugprone-exception-escape)
         // otherwise we would recurse on ourself
         // TODO: the conversion to path & c_str is kinda hacky, should probably fix it at some point
         if (compilerPos == 0) {
-            if (compilerPath.starts_with("/usr/libexec/distplusplus") || compilerPath.starts_with("/usr/lib/distcc")) {
-                compilerPath = boost::process::search_path(std::filesystem::path(compilerPath).stem().c_str()).c_str();
+            if (compilerPath.starts_with("/usr/libexec/distplusplus") ||
+                compilerPath.starts_with("/usr/lib/distcc")) {
+                compilerPath =
+                    boost::process::search_path(std::filesystem::path(compilerPath).stem().c_str()).c_str();
             }
         }
         if (std::filesystem::path(compilerPath).stem() == compilerPath) {
-            compilerPath = boost::process::search_path(std::filesystem::path(compilerPath).stem().c_str()).c_str();
+            compilerPath =
+                boost::process::search_path(std::filesystem::path(compilerPath).stem().c_str()).c_str();
         }
         std::vector<std::string> args;
         for (const auto &arg : argsSpan.subspan(compilerPos + 1)) {

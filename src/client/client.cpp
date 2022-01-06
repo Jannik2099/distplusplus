@@ -22,7 +22,8 @@ grpc::Status Client::reserve() {
     grpc::Status ret = stub->Reserve(&context, reservation, &reservationAnswer);
     if (reservationAnswer.success()) {
         if (!reservationAnswer.has_uuid()) {
-            BOOST_LOG_TRIVIAL(warning) << "host " << context.peer() << " responded to reservation but with no UUID";
+            BOOST_LOG_TRIVIAL(warning)
+                << "host " << context.peer() << " responded to reservation but with no UUID";
             throw FallbackSignal();
         }
         uuid = reservationAnswer.uuid();
@@ -37,8 +38,9 @@ QueryAnswer Client::query(const ServerQuery &serverQuery) {
     return queryAnswer;
 }
 
-CompileAnswer Client::send(const std::string &compilerName, const std::vector<std::string> &args, const std::string &fileName,
-                           const std::string &fileContent, const std::string &cwd) {
+CompileAnswer Client::send(const std::string &compilerName, const std::vector<std::string> &args,
+                           const std::string &fileName, const std::string &fileContent,
+                           const std::string &cwd) {
 
     // TODO: query
 
@@ -50,7 +52,8 @@ CompileAnswer Client::send(const std::string &compilerName, const std::vector<st
         for (const auto &server : config.servers()) {
             grpc::ChannelArguments channelArgs;
             channelArgs.SetMaxReceiveMessageSize(INT_MAX);
-            stub = CompilationServer::NewStub(grpc::CreateCustomChannel(server, grpc::InsecureChannelCredentials(), channelArgs));
+            stub = CompilationServer::NewStub(
+                grpc::CreateCustomChannel(server, grpc::InsecureChannelCredentials(), channelArgs));
             const grpc::StatusCode status = reserve().error_code();
             if (status == grpc::StatusCode::OK) {
                 allDown = false;
@@ -61,8 +64,9 @@ CompileAnswer Client::send(const std::string &compilerName, const std::vector<st
                 BOOST_LOG_TRIVIAL(info) << "host " << server << " is unreachable, attempting next host";
             } else {
                 allDown = false;
-                BOOST_LOG_TRIVIAL(warning) << "host " << server << " replied with grpc error " << common::mapGRPCStatus(status)
-                                           << " to reservation, attempting next host";
+                BOOST_LOG_TRIVIAL(warning)
+                    << "host " << server << " replied with grpc error " << common::mapGRPCStatus(status)
+                    << " to reservation, attempting next host";
             }
         }
         if (allDown) {
@@ -73,8 +77,10 @@ CompileAnswer Client::send(const std::string &compilerName, const std::vector<st
         if (foundServer) {
             break;
         }
-        if (std::chrono::system_clock::now() - timeBeforeReservation >= std::chrono::seconds(config.reservationAttemptTimeout())) {
-            const std::string err_msg("could not find a vacant host after " + std::to_string(config.reservationAttemptTimeout()) +
+        if (std::chrono::system_clock::now() - timeBeforeReservation >=
+            std::chrono::seconds(config.reservationAttemptTimeout())) {
+            const std::string err_msg("could not find a vacant host after " +
+                                      std::to_string(config.reservationAttemptTimeout()) +
                                       " seconds, aborting");
             BOOST_LOG_TRIVIAL(fatal) << err_msg;
             throw std::runtime_error(err_msg);

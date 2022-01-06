@@ -21,22 +21,27 @@ using namespace distplusplus::common;
 
 namespace distplusplus::client::parser {
 
-static std::list<std::vector<std::string>> fileArgsVec;            // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-static std::vector<std::vector<std::string_view>> fileArgsViewVec; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+static std::list<std::vector<std::string>>
+    fileArgsVec; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+static std::vector<std::vector<std::string_view>>
+    fileArgsViewVec; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 void Parser::checkInputFileCandidate(const std::string_view &file) {
     const path filePath(file);
     const path extension = filePath.extension();
-    if (std::find(inputFileExtension.begin(), inputFileExtension.end(), extension) != inputFileExtension.end()) {
+    if (std::find(inputFileExtension.begin(), inputFileExtension.end(), extension) !=
+        inputFileExtension.end()) {
         if (!_infile.empty()) {
             throw ParserError("multiple input files parsed: " + _infile.string() + " & " + std::string(file));
         }
         // language can be overridden with -x
         if (_language == Language::NONE) {
-            if (std::find(inputFileExtensionC.begin(), inputFileExtensionC.end(), extension) != inputFileExtensionC.end()) {
+            if (std::find(inputFileExtensionC.begin(), inputFileExtensionC.end(), extension) !=
+                inputFileExtensionC.end()) {
                 BOOST_LOG_TRIVIAL(trace) << "detected language as C from file extension ." << extension;
                 _language = Language::C;
-            } else if (std::find(inputFileExtensionCXX.begin(), inputFileExtensionCXX.end(), extension) != inputFileExtensionCXX.end()) {
+            } else if (std::find(inputFileExtensionCXX.begin(), inputFileExtensionCXX.end(), extension) !=
+                       inputFileExtensionCXX.end()) {
                 BOOST_LOG_TRIVIAL(trace) << "detected language as C++ from file extension ." << extension;
                 _language = Language::CXX;
             }
@@ -77,7 +82,8 @@ void Parser::parseArgs(const BoundsSpan<std::string_view> &args) { // NOLINT(mis
             BOOST_LOG_TRIVIAL(info) << "cannot distribute because of arg " << arg;
             throw FallbackSignal();
         }
-        if (std::any_of(unseq, singleArgsNoDistributeStartsWith.begin(), singleArgsNoDistributeStartsWith.end(),
+        if (std::any_of(unseq, singleArgsNoDistributeStartsWith.begin(),
+                        singleArgsNoDistributeStartsWith.end(),
                         [&](const auto &arg) { return args[i].starts_with(arg); })) {
             BOOST_LOG_TRIVIAL(info) << "cannot distribute because of arg " << arg;
             throw FallbackSignal();
@@ -99,7 +105,8 @@ void Parser::parseArgs(const BoundsSpan<std::string_view> &args) { // NOLINT(mis
                 throw ParserError("output file specifier is the last argument");
             }
             if (!_outfile.empty()) {
-                throw ParserError("multiple output files parsed: " + _outfile.string() + " & " + std::string(args[i]));
+                throw ParserError("multiple output files parsed: " + _outfile.string() + " & " +
+                                  std::string(args[i]));
             }
             i++;
             _outfile = args[i];
@@ -121,7 +128,8 @@ void Parser::parseArgs(const BoundsSpan<std::string_view> &args) { // NOLINT(mis
             } else if (std::find(xArgsCXX.begin(), xArgsCXX.end(), args[i]) != xArgsCXX.end()) {
                 _language = Language::CXX;
             } else {
-                BOOST_LOG_TRIVIAL(warning) << "uncategorized -x option: \"-x " << args[i] << "\" - cannot distribute";
+                BOOST_LOG_TRIVIAL(warning)
+                    << "uncategorized -x option: \"-x " << args[i] << "\" - cannot distribute";
                 _canDistribute = false;
             }
         } else if (arg == "-target") {
