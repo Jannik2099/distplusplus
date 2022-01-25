@@ -66,17 +66,20 @@ ScopeGuard::~ScopeGuard() {
 }
 void ScopeGuard::defuse() { fuse = false; }
 
-ProcessHelper::ProcessHelper(const boost::filesystem::path &program, const std::vector<std::string> &args,
+ProcessHelper::ProcessHelper(const boost::filesystem::path &program, ArgsVecSpan args,
                              const boost::process::environment &env) {
     // a segfault in boost is really shitty to debug - assert sanity beforehand
     assertAndRaise(!program.empty(), "passed program is empty");
     assertAndRaise(program.has_filename(), "passed program " + program.string() + " is misshaped");
     assertAndRaise(boost::filesystem::is_regular_file(program),
                    "passed program " + program.string() + " does not exist");
-    for (const auto &arg : args) {
-        assertAndRaise(!arg.empty(), "passed argument is empty");
+    // TODO: find out if there's a way to construct boost args without copying?
+    std::vector<std::string> rawArgs;
+    rawArgs.reserve(args.size());
+    for (const ArgsVec::value_type &str : args) {
+        rawArgs.emplace_back(str);
     }
-    process = boost::process::child(program, args, env, boost::process::std_out > stdoutPipe,
+    process = boost::process::child(program, rawArgs, env, boost::process::std_out > stdoutPipe,
                                     boost::process::std_err > stderrPipe);
     process.wait();
     _returnCode = process.exit_code();
@@ -84,9 +87,9 @@ ProcessHelper::ProcessHelper(const boost::filesystem::path &program, const std::
     _stderr = std::string(std::istreambuf_iterator(stderrPipe), {});
 }
 
-// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init) clang-tidy does not properly evaluate into the
-// called constructor
-ProcessHelper::ProcessHelper(const boost::filesystem::path &program, const std::vector<std::string> &args) {
+//  clang-tidy does not properly evaluate into the called constructor
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+ProcessHelper::ProcessHelper(const boost::filesystem::path &program, ArgsVecSpan args) {
     *this = ProcessHelper(program, args, boost::this_process::environment());
 }
 

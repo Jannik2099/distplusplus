@@ -1,99 +1,82 @@
 #include "client/fallback.hpp"
 #include "client/parser.hpp"
+#include "common/argsvec.hpp"
 #include "common/common.hpp"
 #include "common/constants.hpp"
 
 #include <iostream>
-#include <list>
-#include <string>
-#include <vector>
 
-using namespace distplusplus::client::parser;
-using namespace distplusplus::common;
 using distplusplus::client::FallbackSignal;
+using namespace distplusplus::common;
+using namespace distplusplus::client::parser;
 
 int main() {
-	bool success = true;
-	for (const auto &arg : singleArgsNoDistribute) {
-		bool caught = false;
-		std::list<std::string> argsList;
-		Tempfile infile("test.c");
-		Tempfile outfile("test.o");
-		argsList.emplace_back("cc");
-		argsList.push_back(infile);
-		argsList.emplace_back("-c");
-		argsList.emplace_back("-o");
-		argsList.push_back(outfile);
-		argsList.push_back(arg);
-		std::vector<std::string_view> argsViewVec;
-		for (const std::string &arg : argsList) {
-			argsViewVec.push_back(arg);
-		}
-		BoundsSpan argsSpan(argsViewVec.begin(), argsViewVec.end());
-		try {
-			Parser parser(argsSpan);
-		} catch (FallbackSignal &) {
-			caught = true;
-		}
-		if (!caught) {
-			success = false;
-			std::cout << "bad argument " << arg << " didn't throw FallbackSignal" << std::endl;
-		}
-	}
-	for (const auto &arg : singleArgsNoDistributeStartsWith) {
-		bool caught = false;
-		std::list<std::string> argsList;
-		Tempfile infile("test.c");
-		Tempfile outfile("test.o");
-		argsList.emplace_back("cc");
-		argsList.push_back(infile);
-		argsList.emplace_back("-c");
-		argsList.emplace_back("-o");
-		argsList.push_back(outfile);
-		argsList.push_back(arg);
-		std::vector<std::string_view> argsViewVec;
-		for (const std::string &arg : argsList) {
-			argsViewVec.push_back(arg);
-		}
-		BoundsSpan argsSpan(argsViewVec.begin(), argsViewVec.end());
-		try {
-			Parser parser(argsSpan);
-		} catch (FallbackSignal &) {
-			caught = true;
-		}
-		if (!caught) {
-			success = false;
-			std::cout << "bad argument " << arg << " didn't throw FallbackSignal" << std::endl;
-		}
-	}
-	for (const auto &arg : multiArgsNoDistribute) {
-		bool caught = false;
-		std::list<std::string> argsList;
-		Tempfile infile("test.c");
-		Tempfile outfile("test.o");
-		argsList.emplace_back("cc");
-		argsList.push_back(infile);
-		argsList.emplace_back("-c");
-		argsList.emplace_back("-o");
-		argsList.push_back(outfile);
-		argsList.push_back(arg);
-		argsList.push_back("test");
-		std::vector<std::string_view> argsViewVec;
-		for (const std::string &arg : argsList) {
-			argsViewVec.push_back(arg);
-		}
-		BoundsSpan argsSpan(argsViewVec.begin(), argsViewVec.end());
-		try {
-			Parser parser(argsSpan);
-		} catch (FallbackSignal &) {
-			caught = true;
-		}
-		if (!caught) {
-			success = false;
-			std::cout << "bad argument " << arg << " didn't throw FallbackSignal" << std::endl;
-		}
-	}
-	if (!success) {
-		return 1;
-	}
+    bool success = true;
+    for (const char *arg : singleArgsNoDistribute) {
+        bool caught = false;
+        ArgsVec argsVec;
+        Tempfile infile("test.c");
+        Tempfile outfile("test.o");
+        argsVec.emplace_back("cc");
+        argsVec.push_back(infile.c_str());
+        argsVec.emplace_back("-c");
+        argsVec.emplace_back("-o");
+        argsVec.push_back(outfile.c_str());
+        argsVec.push_back(arg);
+        try {
+            Parser parser(argsVec);
+        } catch (FallbackSignal &) {
+            caught = true;
+        }
+        if (!caught) {
+            success = false;
+            std::cout << "bad argument " << arg << " didn't throw FallbackSignal" << std::endl;
+        }
+    }
+    for (const char *arg : singleArgsNoDistributeStartsWith) {
+        bool caught = false;
+        ArgsVec argsVec;
+        Tempfile infile("test.c");
+        Tempfile outfile("test.o");
+        argsVec.emplace_back("cc");
+        argsVec.push_back(infile.c_str());
+        argsVec.emplace_back("-c");
+        argsVec.emplace_back("-o");
+        argsVec.push_back(outfile.c_str());
+        argsVec.push_back(arg);
+        try {
+            Parser parser(argsVec);
+        } catch (FallbackSignal &) {
+            caught = true;
+        }
+        if (!caught) {
+            success = false;
+            std::cout << "bad argument " << arg << " didn't throw FallbackSignal" << std::endl;
+        }
+    }
+    for (const auto &arg : multiArgsNoDistribute) {
+        bool caught = false;
+        ArgsVec argsVec;
+        Tempfile infile("test.c");
+        Tempfile outfile("test.o");
+        argsVec.emplace_back("cc");
+        argsVec.push_back(infile.c_str());
+        argsVec.emplace_back("-c");
+        argsVec.emplace_back("-o");
+        argsVec.push_back(outfile.c_str());
+        argsVec.push_back(arg);
+        argsVec.emplace_back("test");
+        try {
+            Parser parser(argsVec);
+        } catch (FallbackSignal &) {
+            caught = true;
+        }
+        if (!caught) {
+            success = false;
+            std::cout << "bad argument " << arg << " didn't throw FallbackSignal" << std::endl;
+        }
+    }
+    if (!success) {
+        return 1;
+    }
 }

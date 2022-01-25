@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/argsvec.hpp"
 #include "distplusplus.grpc.pb.h"
 #include "distplusplus.pb.h"
 
@@ -19,14 +20,16 @@ namespace distplusplus::client {
 
 class Client final {
 private:
+    using ArgsVecSpan = distplusplus::common::ArgsVecSpan;
+
     std::unique_ptr<CompilationServer::Stub> stub;
     std::string uuid;
     grpc::Status reserve();
     QueryAnswer query(const ServerQuery &serverQuery);
 
 public:
-    CompileAnswer send(const std::string &compilerName, const std::vector<std::string> &args,
-                       const std::string &fileName, const std::string &fileContent, const std::string &cwd);
+    CompileAnswer send(const std::string &compilerName, ArgsVecSpan args, const std::string &fileName,
+                       const std::string &fileContent, const std::string &cwd);
     Client() = default;
 };
 

@@ -5,6 +5,7 @@
 #undef TESTING_PRIVATE
 #endif
 
+#include "common/argsvec.hpp"
 #include "common/common.hpp"
 #include "common/constants.hpp"
 
@@ -20,7 +21,6 @@
 #define private public
 #endif
 
-using distplusplus::common::BoundsSpan;
 using distplusplus::common::Language;
 using std::filesystem::path;
 
@@ -28,21 +28,25 @@ namespace distplusplus::client::parser {
 
 class Parser final {
 private:
-    std::vector<std::string_view> _args;
-    std::string _modeArg;
+    using ArgsVecSpan = distplusplus::common::ArgsVecSpan;
+    using ArgsVec = distplusplus::common::ArgsVec;
+    using Arg = distplusplus::common::Arg;
+
+    ArgsVec _args;
+    Arg _modeArg;
     path _infile;
     path _outfile;
     std::string _compiler;
-    std::optional<std::string> _target;
+    std::optional<Arg> _target;
     std::optional<bool> _canDistribute;
     Language _language = Language::NONE;
 
-    void checkInputFileCandidate(const std::string_view &file);
+    void checkInputFileCandidate(const Arg &file);
     void readArgsFile(const path &argsFile);
-    void parseArgs(const BoundsSpan<std::string_view> &args);
+    void parseArgs(ArgsVecSpan args);
 
 public:
-    explicit Parser(BoundsSpan<std::string_view> &args);
+    explicit Parser(ArgsVecSpan args);
     Parser(const Parser &) = delete;
     Parser(Parser &&) = delete;
     Parser operator=(const Parser &) = delete;
@@ -50,10 +54,9 @@ public:
     ~Parser() = default;
     [[nodiscard]] const path &infile() const;
     [[nodiscard]] const path &outfile() const;
-    [[nodiscard]] const std::optional<std::string> &target() const;
-    // TODO: return BoundsSpan?
-    [[nodiscard]] const std::vector<std::string_view> &args() const;
-    [[nodiscard]] const std::string &modeArg() const;
+    [[nodiscard]] std::optional<Arg> target() const;
+    [[nodiscard]] const ArgsVec &args() const;
+    [[nodiscard]] const Arg &modeArg() const;
     [[nodiscard]] bool canDistribute() const;
 };
 

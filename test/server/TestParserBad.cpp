@@ -1,18 +1,15 @@
+#include "common/argsvec.hpp"
 #include "server/parser.hpp"
 
-#include <string>
-#include <string_view>
-#include <vector>
-
+using distplusplus::common::ArgsVec;
 using namespace distplusplus::server::parser;
 
 int main() {
-	const std::string arg = "test";
-	const std::vector<std::string_view> argsVec = {arg};
-	try {
-		Parser parser(argsVec);
-	} catch (const CannotProcessSignal &sig) {
-		return 0;
-	}
-	return 1;
+    ArgsVec argsVec = {"test"};
+    try {
+        Parser parser(argsVec);
+    } catch (const CannotProcessSignal &sig) {
+        return 0;
+    }
+    return 1;
 }

@@ -1,3 +1,4 @@
+#include "common/argsvec.hpp"
 #include "common/common.hpp"
 
 #include <boost/process.hpp>
@@ -7,10 +8,10 @@
 using namespace distplusplus::common;
 
 int main() {
-	std::vector<std::string> args;
-	ProcessHelper processHelper(boost::process::search_path("false"), args);
-	if (processHelper.returnCode() != 0) {
-		return 0;
-	}
-	return 1;
+    ArgsVec args;
+    ProcessHelper processHelper(boost::process::search_path("false"), args);
+    if (processHelper.returnCode() != 0) {
+        return 0;
+    }
+    return 1;
 }

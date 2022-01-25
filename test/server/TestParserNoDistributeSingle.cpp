@@ -1,32 +1,25 @@
+#include "common/argsvec.hpp"
 #include "common/constants.hpp"
 #include "server/parser.hpp"
 
-#include <algorithm>
 #include <iostream>
-#include <list>
-#include <string>
-#include <string_view>
-#include <vector>
 
-using namespace distplusplus::server::parser;
+using distplusplus::common::ArgsVec;
 using distplusplus::common::singleArgsNoDistribute;
+using namespace distplusplus::server::parser;
 
 int main() {
-	std::list<std::string> argsList;
-	argsList.emplace_back("-c");
-	for (const auto &arg : singleArgsNoDistribute) {
-		std::vector<std::string_view> argsVec;
-		argsList.emplace_back(arg);
-		for (const auto &arg2 : argsList) {
-			argsVec.push_back(arg2);
-		}
-		try {
-			Parser parser(argsVec);
-		} catch (const CannotProcessSignal &sig) {
-			argsList.pop_back();
-			continue;
-		}
-		std::cout << "parser didn't throw on no distrubute arg " << arg << std::endl;
-		return 1;
-	}
+    ArgsVec argsVec;
+    argsVec.emplace_back("-c");
+    for (const char *arg : singleArgsNoDistribute) {
+        argsVec.push_back(arg);
+        try {
+            Parser parser(argsVec);
+        } catch (const CannotProcessSignal &) {
+            argsVec.pop_back();
+            continue;
+        }
+        std::cout << "parser didn't throw on no distrubute arg " << arg << std::endl;
+        return 1;
+    }
 }

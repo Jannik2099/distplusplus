@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common/argsvec.hpp"
+
 #include <exception>
 #include <string>
 #include <string_view>
@@ -19,12 +21,16 @@ public:
 
 class Parser final {
 private:
-    const std::vector<std::string_view> _args;
-    static std::vector<std::string_view> parse(const std::vector<std::string_view> &args);
+    using ArgsVecSpan = distplusplus::common::ArgsVecSpan;
+    using ArgsVec = distplusplus::common::ArgsVec;
+    using Arg = distplusplus::common::Arg;
+
+    ArgsVec _args;
+    void parse(ArgsVecSpan args);
 
 public:
-    explicit Parser(const std::vector<std::string_view> &args);
-    [[nodiscard]] const std::vector<std::string_view> &args() const;
+    explicit Parser(ArgsVecSpan args);
+    [[nodiscard]] const ArgsVec &args() const;
 };
 
 } // namespace distplusplus::server::parser

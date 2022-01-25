@@ -5,6 +5,6 @@
 using namespace distplusplus::common;
 
 int main() {
-	assertAndRaise(true, "this is true");
-	return 0;
+    assertAndRaise(true, "this is true");
+    return 0;
 }

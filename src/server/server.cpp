@@ -1,5 +1,6 @@
 #include "server.hpp"
 
+#include "common/argsvec.hpp"
 #include "parser.hpp"
 
 #include <algorithm>
@@ -19,6 +20,8 @@
 #include <sstream>
 #include <string_view>
 #include <typeinfo>
+
+using distplusplus::common::ArgsVec;
 
 namespace distplusplus::server {
 
@@ -174,8 +177,8 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
         const distplusplus::common::Tempfile outputFile(clientIPDelimited + "." +
                                                         request->inputfile().name() + ".o");
 
-        std::vector<std::string_view> preArgs(request->argument().begin(), request->argument().end());
-        std::vector<std::string_view> args;
+        ArgsVec preArgs(request->argument().begin(), request->argument().end());
+        ArgsVec args;
         try {
             parser::Parser parser(preArgs);
             args = parser.args();
@@ -192,12 +195,7 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
         args.emplace_back(inputFile.c_str());
 
         const boost::filesystem::path compilerPath = boost::process::search_path(request->compiler());
-        std::vector<std::string> processArgs;
-        processArgs.reserve(args.size());
-        for (const auto &arg : args) {
-            processArgs.emplace_back(arg);
-        }
-        distplusplus::common::ProcessHelper compilerProcess(compilerPath, processArgs);
+        distplusplus::common::ProcessHelper compilerProcess(compilerPath, args);
         // TODO: proper logging
 
         answer->set_returncode(compilerProcess.returnCode());

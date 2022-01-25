@@ -38,9 +38,8 @@ QueryAnswer Client::query(const ServerQuery &serverQuery) {
     return queryAnswer;
 }
 
-CompileAnswer Client::send(const std::string &compilerName, const std::vector<std::string> &args,
-                           const std::string &fileName, const std::string &fileContent,
-                           const std::string &cwd) {
+CompileAnswer Client::send(const std::string &compilerName, ArgsVecSpan args, const std::string &fileName,
+                           const std::string &fileContent, const std::string &cwd) {
 
     // TODO: query
 

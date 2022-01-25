@@ -4,14 +4,12 @@
 #include "fallback.hpp"
 
 #include <algorithm>
-#include <array>
 #include <boost/log/trivial.hpp>
 #include <cstdlib>
 #include <execution>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <list>
 #include <sstream>
 #include <type_traits>
 #include <utility>
@@ -21,12 +19,7 @@ using namespace distplusplus::common;
 
 namespace distplusplus::client::parser {
 
-static std::list<std::vector<std::string>>
-    fileArgsVec; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-static std::vector<std::vector<std::string_view>>
-    fileArgsViewVec; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-
-void Parser::checkInputFileCandidate(const std::string_view &file) {
+void Parser::checkInputFileCandidate(const Arg &file) {
     const path filePath(file);
     const path extension = filePath.extension();
     if (std::find(inputFileExtension.begin(), inputFileExtension.end(), extension) !=
@@ -46,7 +39,7 @@ void Parser::checkInputFileCandidate(const std::string_view &file) {
                 _language = Language::CXX;
             }
         }
-        _infile = file;
+        _infile = path(file);
     } else {
         _args.push_back(file);
     }
@@ -54,53 +47,47 @@ void Parser::checkInputFileCandidate(const std::string_view &file) {
 
 void Parser::readArgsFile(const path &argsFile) { // NOLINT(misc-no-recursion)
     std::ifstream fileStream(argsFile);
-    std::vector<std::string> myArgs;
+    ArgsVec fileArgs;
     while (!fileStream.eof()) {
         std::string arg;
         std::getline(fileStream, arg, ' ');
-        myArgs.push_back(arg);
+        fileArgs.push_back(arg);
     }
-    // this ain't pretty
-    fileArgsVec.push_back(myArgs);
-    std::vector<std::string_view> fileArgsView;
-    for (const auto &arg : fileArgsVec.back()) {
-        fileArgsView.emplace_back(std::string_view(arg));
-    }
-    fileArgsViewVec.push_back(fileArgsView);
-    parseArgs(BoundsSpan(fileArgsViewVec.back()));
+    parseArgs(fileArgs);
 }
 
 // This function is genuine hell and I do not know how to make it better
 // every branch in the main loop MUST be elseif.
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-void Parser::parseArgs(const BoundsSpan<std::string_view> &args) { // NOLINT(misc-no-recursion)
+void Parser::parseArgs(ArgsVecSpan args) { // NOLINT(misc-no-recursion)
     _args.reserve(args.size() + _args.size());
     for (std::size_t i = 0; i < args.size(); i++) {
-        const std::string_view arg = args[i];
+        const Arg &arg = args[i];
+        const std::string_view argView(arg);
         if (std::any_of(unseq, singleArgsNoDistribute.begin(), singleArgsNoDistribute.end(),
-                        [&](const auto &arg) { return args[i] == arg; })) {
-            BOOST_LOG_TRIVIAL(info) << "cannot distribute because of arg " << arg;
+                        [argView](const char *argComp) { return argView == argComp; })) {
+            BOOST_LOG_TRIVIAL(info) << "cannot distribute because of arg " << arg.c_str();
             throw FallbackSignal();
         }
         if (std::any_of(unseq, singleArgsNoDistributeStartsWith.begin(),
                         singleArgsNoDistributeStartsWith.end(),
-                        [&](const auto &arg) { return args[i].starts_with(arg); })) {
-            BOOST_LOG_TRIVIAL(info) << "cannot distribute because of arg " << arg;
+                        [argView](const char *argComp) { return argView.starts_with(argComp); })) {
+            BOOST_LOG_TRIVIAL(info) << "cannot distribute because of arg " << arg.c_str();
             throw FallbackSignal();
         }
         if (std::any_of(unseq, multiArgsNoDistribute.begin(), multiArgsNoDistribute.end(),
-                        [&](const auto &arg) { return args[i] == arg; })) {
-            BOOST_LOG_TRIVIAL(info) << "cannot distribute because of arg " << arg;
+                        [argView](const char *argComp) { return argView == argComp; })) {
+            BOOST_LOG_TRIVIAL(info) << "cannot distribute because of arg " << arg.c_str();
             throw FallbackSignal();
         }
         // we assume files do not start with -
-        if (arg.starts_with("@")) {
-            const path argsFile = arg.substr(1);
+        if (argView.starts_with("@")) {
+            const path argsFile = argView.substr(1);
             if (!std::filesystem::is_regular_file(argsFile)) {
                 throw ParserError("argument file: " + std::string(arg) + " doesn't seem to exist");
             }
             readArgsFile(argsFile);
-        } else if (arg == "-o") {
+        } else if (argView == "-o") {
             if (i + 1 == args.size()) {
                 throw ParserError("output file specifier is the last argument");
             }
@@ -109,59 +96,59 @@ void Parser::parseArgs(const BoundsSpan<std::string_view> &args) { // NOLINT(mis
                                   std::string(args[i]));
             }
             i++;
-            _outfile = args[i];
-        } else if (arg == "-c" || arg == "-S") {
+            _outfile = std::filesystem::path(args[i]);
+        } else if (argView == "-c" || argView == "-S") {
             _modeArg = arg;
             if (!_canDistribute.has_value()) {
-                BOOST_LOG_TRIVIAL(trace) << "can distribute because of arg " << arg;
+                BOOST_LOG_TRIVIAL(trace) << "can distribute because of arg " << arg.c_str();
                 _canDistribute = true;
             }
-        } else if (arg == "-x") {
+        } else if (argView == "-x") {
             if (i + 1 == args.size()) {
                 throw ParserError("multiArg -x is the last argument");
             }
             _args.push_back(args[i]);
             i++;
             _args.push_back(args[i]);
-            if (std::find(xArgsC.begin(), xArgsC.end(), args[i]) != xArgsC.end()) {
+            if (std::find(xArgsC.begin(), xArgsC.end(), std::string_view(args[i])) != xArgsC.end()) {
                 _language = Language::C;
-            } else if (std::find(xArgsCXX.begin(), xArgsCXX.end(), args[i]) != xArgsCXX.end()) {
+            } else if (std::find(xArgsCXX.begin(), xArgsCXX.end(), std::string_view(args[i])) !=
+                       xArgsCXX.end()) {
                 _language = Language::CXX;
             } else {
-                BOOST_LOG_TRIVIAL(warning)
-                    << "uncategorized -x option: \"-x " << args[i] << "\" - cannot distribute";
+                BOOST_LOG_TRIVIAL(warning) << "uncategorized -x option: \"-x " << std::string_view(args[i])
+                                           << "\" - cannot distribute";
                 _canDistribute = false;
             }
-        } else if (arg == "-target") {
+        } else if (argView == "-target") {
             if (i + 1 == args.size()) {
                 throw ParserError("clang -target is the last argument");
             }
-            _args.push_back(arg);
+            _args.push_back(args[i]);
             i++;
-            const std::string target(args[i]);
-            _target = target;
-            _args.push_back(target);
-        } else if (arg.starts_with("--target=")) {
-            const std::string::size_type pos = arg.find('=');
-            const std::string_view target = arg.substr(pos + 1);
-            _target = target;
+            _target = args[i];
+            _args.push_back(args[i]);
+        } else if (argView.starts_with("--target=")) {
+            const std::string::size_type pos = argView.find('=');
+            _target = Arg(argView.substr(pos + 1));
             _args.push_back(arg);
-        } else if (std::find(multiArgsCPP.begin(), multiArgsCPP.end(), arg) != multiArgsCPP.end()) {
+        } else if (std::find(multiArgsCPP.begin(), multiArgsCPP.end(), std::string_view(arg)) !=
+                   multiArgsCPP.end()) {
             if (i + 1 == args.size()) {
                 throw ParserError("multi argument " + std::string(arg) + " is the last argument");
             }
             _args.push_back(args[i]);
             i++;
             _args.push_back(args[i]);
-        } else if (std::filesystem::is_regular_file(arg)) {
-            checkInputFileCandidate(arg);
+        } else if (std::filesystem::is_regular_file(std::string_view(arg))) {
+            checkInputFileCandidate(args[i]);
         } else {
             _args.push_back(arg);
         }
     }
 }
 
-Parser::Parser(BoundsSpan<std::string_view> &args) {
+Parser::Parser(ArgsVecSpan args) {
     parseArgs(args);
     if (!_canDistribute.has_value()) {
         _canDistribute = false;
@@ -187,11 +174,11 @@ const std::filesystem::path &Parser::infile() const { return _infile; }
 
 const std::filesystem::path &Parser::outfile() const { return _outfile; }
 
-const std::optional<std::string> &Parser::target() const { return _target; }
+std::optional<Arg> Parser::target() const { return _target; }
 
-const std::vector<std::string_view> &Parser::args() const { return _args; }
+const ArgsVec &Parser::args() const { return _args; }
 
-const std::string &Parser::modeArg() const { return _modeArg; }
+const Arg &Parser::modeArg() const { return _modeArg; }
 
 bool Parser::canDistribute() const { return _canDistribute.value(); }
 

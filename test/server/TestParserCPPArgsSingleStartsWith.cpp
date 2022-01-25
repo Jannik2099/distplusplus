@@ -1,32 +1,29 @@
+#include "common/argsvec.hpp"
 #include "common/constants.hpp"
 #include "server/parser.hpp"
 
 #include <algorithm>
 #include <iostream>
-#include <list>
-#include <string>
 #include <string_view>
-#include <vector>
 
-using namespace distplusplus::server::parser;
+using distplusplus::common::ArgsVec;
 using distplusplus::common::singleArgsCPPStartsWith;
+using namespace distplusplus::server::parser;
 
 int main() {
-	std::list<std::string> argsList;
-	argsList.emplace_back("-c");
-	for (const auto &arg : singleArgsCPPStartsWith) {
-		argsList.emplace_back(std::string(arg) + "test");
-	}
-	std::vector<std::string_view> argsVec;
-	for (const auto &arg : argsList) {
-		argsVec.push_back(arg);
-	}
-	Parser parser(argsVec);
-	for (const auto &argParsed : parser.args()) {
-		if (std::any_of(singleArgsCPPStartsWith.begin(), singleArgsCPPStartsWith.end(),
-						[&](const auto &arg) { return argParsed.starts_with(arg); })) {
-			std::cout << "preprocessor argument " << argParsed << " was not filtered" << std::endl;
-			return 1;
-		}
-	}
+    ArgsVec argsVec;
+    argsVec.emplace_back("-c");
+    for (const char *arg : singleArgsCPPStartsWith) {
+        argsVec.emplace_back(std::string(arg) + "test");
+    }
+    Parser parser(argsVec);
+    for (const auto &argParsed : parser.args()) {
+        if (std::any_of(
+                singleArgsCPPStartsWith.begin(), singleArgsCPPStartsWith.end(),
+                [&](const char *argComp) { return std::string_view(argParsed).starts_with(argComp); })) {
+            std::cout << "preprocessor argument " << std::string_view(argParsed) << " was not filtered"
+                      << std::endl;
+            return 1;
+        }
+    }
 }
