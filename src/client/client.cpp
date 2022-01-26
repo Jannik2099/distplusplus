@@ -53,20 +53,27 @@ CompileAnswer Client::send(const std::string &compilerName, ArgsVecSpan args, co
             channelArgs.SetMaxReceiveMessageSize(INT_MAX);
             stub = CompilationServer::NewStub(
                 grpc::CreateCustomChannel(server, grpc::InsecureChannelCredentials(), channelArgs));
-            const grpc::StatusCode status = reserve().error_code();
-            if (status == grpc::StatusCode::OK) {
+            const grpc::Status status = reserve();
+            const grpc::StatusCode statusCode = status.error_code();
+            if (statusCode == grpc::StatusCode::OK) {
+                BOOST_LOG_TRIVIAL(debug) << "got reservation uuid " << uuid << " from host " << server;
                 allDown = false;
                 foundServer = true;
                 break;
             }
-            if (status == grpc::StatusCode::UNAVAILABLE) {
-                BOOST_LOG_TRIVIAL(info) << "host " << server << " is unreachable, attempting next host";
-            } else {
+            if (statusCode == grpc::StatusCode::RESOURCE_EXHAUSTED) {
                 allDown = false;
-                BOOST_LOG_TRIVIAL(warning)
-                    << "host " << server << " replied with grpc error " << common::mapGRPCStatus(status)
-                    << " to reservation, attempting next host";
+                BOOST_LOG_TRIVIAL(debug) << "host " << server << " is full, currently processing "
+                                         << status.error_details() << " jobs";
+                continue;
             }
+            if (statusCode == grpc::StatusCode::UNAVAILABLE) {
+                BOOST_LOG_TRIVIAL(info) << "host " << server << " is unreachable, attempting next host";
+                continue;
+            }
+            BOOST_LOG_TRIVIAL(warning)
+                << "host " << server << " replied with grpc error " << common::mapGRPCStatus(statusCode)
+                << " to reservation, attempting next host";
         }
         if (allDown) {
             const std::string err_msg("all specified hosts were unreachable");

@@ -13,7 +13,6 @@
 #include <exception>
 #include <fstream>
 #include <functional>
-#include <google/protobuf/util/json_util.h>
 #include <iostream>
 #include <iterator>
 #include <memory>
@@ -105,8 +104,9 @@ grpc::Status Server::Reserve([[maybe_unused]] grpc::ServerContext *context,
                              [[maybe_unused]] const distplusplus::Reservation *reservation,
                              distplusplus::ReservationAnswer *answer) {
     try {
+        std::uint64_t jobsCur = jobsMax;
         if (jobsRunning < jobsMax) {
-            std::uint64_t jobsCur = jobsRunning.load();
+            jobsCur = jobsRunning.load();
             if (std::atomic_compare_exchange_strong(&jobsRunning, &jobsCur, jobsCur + 1)) {
                 common::ScopeGuard jobCountGuard([&]() { jobsRunning--; });
                 const std::string uuid = boost::uuids::to_string(boost::uuids::random_generator()());
@@ -123,7 +123,7 @@ grpc::Status Server::Reserve([[maybe_unused]] grpc::ServerContext *context,
             }
         }
         answer->set_success(false);
-        return grpc::Status::OK;
+        return {grpc::StatusCode::RESOURCE_EXHAUSTED, "host is full", std::to_string(jobsCur)};
     } catch (const std::exception &e) {
         exceptionAbortHandler(e);
     } catch (...) {
@@ -136,11 +136,11 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
     try {
         const std::string clientIP = context->peer();
         const std::string &clientUUID = request->uuid();
-        BOOST_LOG_TRIVIAL(trace) << "client " << clientIP << " sent RPC " << [&request]() {
-            std::string ret;
-            google::protobuf::util::MessageToJsonString(*request, &ret);
-            return ret;
-        }();
+        BOOST_LOG_TRIVIAL(trace) << "client " << clientIP << " sent RPC:" << '\n'
+                                 << "uuid: " << clientUUID << '\n'
+                                 << "compiler: " << request->compiler() << '\n'
+                                 << "filename: " << request->inputfile().name() << '\n'
+                                 << "cwd: " << request->cwd();
         {
             std::lock_guard lockGuard(reservationLock);
             if (std::erase_if(reservations, [&clientUUID](const _internal::reservationType &a) {
