@@ -77,7 +77,7 @@ CompileAnswer Client::send(const std::string &compilerName, ArgsVecSpan args, co
         }
         if (allDown) {
             const std::string err_msg("all specified hosts were unreachable");
-            BOOST_LOG_TRIVIAL(fatal) << err_msg;
+            BOOST_LOG_TRIVIAL(error) << err_msg;
             throw std::runtime_error(err_msg);
         }
         if (foundServer) {
@@ -88,7 +88,7 @@ CompileAnswer Client::send(const std::string &compilerName, ArgsVecSpan args, co
             const std::string err_msg("could not find a vacant host after " +
                                       std::to_string(config.reservationAttemptTimeout()) +
                                       " seconds, aborting");
-            BOOST_LOG_TRIVIAL(fatal) << err_msg;
+            BOOST_LOG_TRIVIAL(error) << err_msg;
             throw std::runtime_error(err_msg);
         }
     }
