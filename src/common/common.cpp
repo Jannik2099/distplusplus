@@ -98,18 +98,18 @@ const std::string &ProcessHelper::get_stderr() const { return _stderr; }
 const std::string &ProcessHelper::get_stdout() const { return _stdout; }
 
 void Tempfile::createFileName(const path &path) {
-    auto suffix = path.filename().string();
+    const std::string suffix = path.filename().string();
     if (suffix.empty()) [[unlikely]] {
         throw std::invalid_argument("path " + path.string() + " has no filename");
     }
     if (path.filename() != path) [[unlikely]] {
         throw std::invalid_argument("path " + path.string() + " is not a basename");
     }
-    std::string templateString = "XXXXXX" + suffix;
+    const std::string templateString = "XXXXXX" + suffix;
     // char arrays are a special kind of hellspawn
     char *templateCString = strdup(templateString.c_str()); // NOLINT(cppcoreguidelines-pro-type-vararg)
     // and so is this function
-    const int fileDescriptor = mkstemps(templateCString, gsl::narrow_cast<int>(suffix.size() / sizeof(char)));
+    const int fileDescriptor = mkstemps(templateCString, gsl::narrow_cast<int>(suffix.length()));
     if (fileDescriptor == -1) {
         const int err = errno;
         const std::string errorMessage = "error creating file descriptor - errno is " + std::to_string(err);
@@ -123,7 +123,7 @@ void Tempfile::createFileName(const path &path) {
         throw std::runtime_error(errorMessage);
     }
     this->assign(templateCString);
-    namePtr = templateCString;
+    free(templateCString); // NOLINT(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
 }
 
 Tempfile::Tempfile(const std::filesystem::path &name) { createFileName(name); }
@@ -136,7 +136,6 @@ Tempfile::Tempfile(const std::filesystem::path &name, const std::string &content
 }
 
 Tempfile::~Tempfile() {
-    free(namePtr); // NOLINT(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
     if (!cleanup) {
         return;
     }

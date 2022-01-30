@@ -73,7 +73,6 @@ public:
 class Tempfile final : public path {
 private:
     bool cleanup = true;
-    char *namePtr = nullptr;
     void createFileName(const path &path);
 
 public:
