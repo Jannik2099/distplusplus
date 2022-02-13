@@ -17,8 +17,8 @@
 
 using namespace distplusplus::server;
 
-static volatile std::sig_atomic_t signalFlag =
-    0; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+static volatile std::sig_atomic_t signalFlag = 0;
 
 static void signalHandler(int signal) {
     signalFlag = 1;
