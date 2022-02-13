@@ -113,8 +113,10 @@ CompileAnswer Client::send(const std::string &compilerName, ArgsVecSpan args, co
         return compileAnswer;
     }
     // TODO: configure if should fallback
+    // TODO: prolly should have better formatting
     BOOST_LOG_TRIVIAL(error) << "distributing to " << context.peer() << " failed with gRPC error "
-                             << common::mapGRPCStatus(status.error_code()) << " " << status.error_message();
+                             << common::mapGRPCStatus(status.error_code()) << " " << status.error_message()
+                             << " " << status.error_details();
     throw FallbackSignal();
 }
 

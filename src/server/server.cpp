@@ -47,23 +47,35 @@ bool ReservationCompare::operator()(const reservationType &a, const reservationT
 
 static bool sanitizeFile(const distplusplus::File &file) {
     const std::string &filename = file.name();
-    return std::filesystem::path(filename).filename() == filename;
+    if (std::filesystem::path(filename).filename() == filename) {
+        return true;
+    }
+    BOOST_LOG_TRIVIAL(warning) << "rejected file " << filename << " due to malformed name";
+    return false;
 }
 
 static bool sanitizeRequest(const distplusplus::CompileRequest &request) {
-
     const std::string &compiler = request.compiler();
     if (std::filesystem::path(compiler).filename() != compiler) {
+        BOOST_LOG_TRIVIAL(warning) << "rejected requested compiler " << compiler
+                                   << " as it does not look like a basename";
         return false;
     }
     return sanitizeFile(request.inputfile());
 }
 
-// TODO: this is NOT secure yet and purely for convenience
+// This does not check for dir privileges and doing so would implement many TOCTOU pitfalls
+// However we can assume that /usr is only modifiable by root
 static bool checkCompilerAllowed(const std::string &compiler) {
-    // TODO: check for dir priveleges
-    std::function<bool(const std::filesystem::directory_entry &)> checkIfSymlink =
-        [&compiler](const auto &file) { return file.is_symlink() && compiler == file.path().filename(); };
+    const std::function<bool(const std::filesystem::directory_entry &)> checkIfSymlink =
+        [&compiler](const auto &file) {
+            if (file.is_symlink() && compiler == file.path().filename()) {
+                BOOST_LOG_TRIVIAL(trace)
+                    << "detected compiler " << compiler << " as allowed by comparing against " << file;
+                return true;
+            }
+            return false;
+        };
 
     bool ret1 = false;
     if (std::filesystem::is_directory("/usr/lib/distcc")) {
@@ -186,8 +198,8 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
             BOOST_LOG_TRIVIAL(warning)
                 << "job " << clientUUID << " from host " << clientIP << " aborted due to invalid arguments:\n"
                 << signal.what();
-            return {grpc::StatusCode::INVALID_ARGUMENT,
-                    "job aborted due to invalid arguments:\n" + signal.what()};
+            return {grpc::StatusCode::INVALID_ARGUMENT, "job aborted due to invalid arguments",
+                    signal.what()};
         }
 
         args.emplace_back("-o");
