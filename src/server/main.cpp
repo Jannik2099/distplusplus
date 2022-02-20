@@ -1,4 +1,6 @@
 #include "common/common.hpp"
+#include "common/compression_helper.hpp"
+#include "distplusplus.pb.h"
 #include "server.hpp"
 
 #include <boost/log/trivial.hpp>
@@ -45,12 +47,25 @@ int main(int argc, char *argv[]) {
     }
     boost::program_options::options_description desc;
     // clang-format off
-	desc.add_options()
-		("help", "show this help")
-		("jobs", boost::program_options::value<std::uint64_t>()->default_value(coreCount), "number of maximum jobs being processed")
-		("log-level", boost::program_options::value<std::string>(), "log level")
-		("listen-address", boost::program_options::value<std::string>()->default_value("127.0.0.1:3633"), "listen adddress")
-	;
+    desc.add_options()
+        ("compression",
+         boost::program_options::value<std::string>()->default_value(DISTPLUSPLUS_DEFAULT_COMPRESSION_STR),
+         "compression algorithm to use, must be one of [NONE, zstd]")
+        ("compression-level",
+         boost::program_options::value<std::int64_t>()->default_value(1),
+         "compression level, specific values depend on used algorithm. Accepts positive and negative values")
+        ("help",
+         "show this help")
+        ("jobs",
+         boost::program_options::value<std::uint64_t>()->default_value(coreCount),
+         "number of maximum jobs being processed")
+        ("listen-address",
+         boost::program_options::value<std::string>()->default_value("127.0.0.1:3633"),
+         "listen adddress")
+        ("log-level",
+         boost::program_options::value<std::string>(),
+         "log level")
+    ;
     // clang-format on
     boost::program_options::variables_map varMap;
     boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), varMap);
@@ -61,6 +76,7 @@ int main(int argc, char *argv[]) {
         exit(0);
     }
 
+    // set up log level before processing other options
     if (varMap.count("log-level") != 0) {
         const std::string logLevel = varMap["log-level"].as<std::string>();
         distplusplus::common::initBoostLogging(logLevel);
@@ -68,11 +84,20 @@ int main(int argc, char *argv[]) {
         distplusplus::common::initBoostLogging();
     }
 
-    const std::uint64_t maxJobs = varMap["jobs"].as<std::uint64_t>();
-    if (maxJobs == 0) {
-        BOOST_LOG_TRIVIAL(error) << "--jobs must be greater than 0";
+    const distplusplus::CompressionType compressionType = [&varMap] {
+        const std::string userCompressionType = varMap["compression"].as<std::string>();
+        if (userCompressionType == "NONE") {
+            return distplusplus::CompressionType::NONE;
+        }
+        if (userCompressionType == "zstd") {
+            return distplusplus::CompressionType::zstd;
+        }
+        BOOST_LOG_TRIVIAL(error) << "provided compression algorithm " << userCompressionType
+                                 << " not in [NONE, zstd]";
         exit(1);
-    }
+    }();
+
+    const std::int64_t compressionLevel = varMap["compression-level"].as<std::int64_t>();
 
     std::string listenAddr = varMap["listen-address"].as<std::string>();
     char *listenAddrEnv = getenv("DISTPLUSPLUS_LISTEN_ADDRESS");
@@ -81,7 +106,14 @@ int main(int argc, char *argv[]) {
     }
     BOOST_LOG_TRIVIAL(info) << "listening on " << listenAddr;
 
-    Server service(maxJobs);
+    const std::uint64_t maxJobs = varMap["jobs"].as<std::uint64_t>();
+    if (maxJobs == 0) {
+        BOOST_LOG_TRIVIAL(error) << "--jobs must be greater than 0";
+        exit(1);
+    }
+
+    const distplusplus::common::CompressorFactory compressorFactory(compressionType, compressionLevel);
+    Server service(maxJobs, compressorFactory);
     grpc::ServerBuilder builder;
     builder.SetMaxReceiveMessageSize(INT_MAX);
     builder.SetMaxSendMessageSize(INT_MAX);

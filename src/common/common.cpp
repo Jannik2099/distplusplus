@@ -128,7 +128,7 @@ void Tempfile::createFileName(const path &path) {
 
 Tempfile::Tempfile(const std::filesystem::path &name) { createFileName(name); }
 
-Tempfile::Tempfile(const std::filesystem::path &name, const std::string &content) {
+Tempfile::Tempfile(const std::filesystem::path &name, std::string_view content) {
     createFileName(name);
     std::ofstream stream(this->string());
     stream << content;

@@ -183,8 +183,10 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
         // the client could be a path to an unix socket too
         std::string clientIPDelimited = clientIP;
         std::replace(clientIPDelimited.begin(), clientIPDelimited.end(), '/', '-');
+        const distplusplus::common::Decompressor decompressor(request->inputfile().compressiontype(),
+                                                              request->inputfile().content());
         const distplusplus::common::Tempfile inputFile(clientIPDelimited + "." + request->inputfile().name(),
-                                                       request->inputfile().content());
+                                                       decompressor.data());
 
         const distplusplus::common::Tempfile outputFile(clientIPDelimited + "." +
                                                         request->inputfile().name() + ".o");
@@ -217,7 +219,9 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
         std::ifstream fileStream(outputFile);
         std::stringstream fileContent;
         fileContent << fileStream.rdbuf();
-        answer->mutable_outputfile()->set_content(fileContent.str());
+        const distplusplus::common::Compressor compressor = compressorFactory(std::move(fileContent).str());
+        answer->mutable_outputfile()->set_compressiontype(compressorFactory.compressionType());
+        answer->mutable_outputfile()->set_content(compressor.data().data(), compressor.data().size());
         return grpc::Status::OK;
     } catch (const std::exception &e) {
         exceptionAbortHandler(e);
@@ -226,7 +230,8 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
     }
 }
 
-Server::Server(std::uint64_t maxJobs) : jobsMax(maxJobs) {
+Server::Server(std::uint64_t maxJobs, distplusplus::common::CompressorFactory compressorFactory)
+    : compressorFactory(compressorFactory), jobsMax(maxJobs) {
     distplusplus::common::assertAndRaise(maxJobs != 0, "tried to construct server with 0 max jobs");
 }
 

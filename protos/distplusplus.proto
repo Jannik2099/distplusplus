@@ -5,8 +5,7 @@ package distplusplus;
 // gRPC only offer gzip and deflate, which are too slow for scaling out
 enum CompressionType {
 	NONE = 0;
-	lz4 = 1; // only frame format
-	zstd = 2; // only frame format
+	zstd = 1;
 }
 
 // This is not for the exact compiler binary (since then we'd need g++ and CTARGET-gcc), but for is_clang / is_gcc queries

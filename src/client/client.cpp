@@ -39,7 +39,7 @@ QueryAnswer Client::query(const ServerQuery &serverQuery) {
 }
 
 CompileAnswer Client::send(const std::string &compilerName, ArgsVecSpan args, const std::string &fileName,
-                           const std::string &fileContent, const std::string &cwd) {
+                           std::string_view fileContent, const std::string &cwd) {
 
     // TODO: query
 
@@ -99,10 +99,10 @@ CompileAnswer Client::send(const std::string &compilerName, ArgsVecSpan args, co
     for (const auto &arg : args) {
         compileRequest.add_argument(arg);
     }
+
     compileRequest.mutable_inputfile()->set_name(fileName);
-    compileRequest.mutable_inputfile()->set_content(fileContent);
-    // TODO: compression
-    compileRequest.mutable_inputfile()->set_compressiontype(CompressionType::NONE);
+    compileRequest.mutable_inputfile()->set_content(fileContent.data(), fileContent.size());
+    compileRequest.mutable_inputfile()->set_compressiontype(config.compressionType());
     compileRequest.set_cwd(cwd);
     CompileAnswer compileAnswer;
 

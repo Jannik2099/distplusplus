@@ -1,6 +1,8 @@
 #include "client.hpp"
 #include "common/argsvec.hpp"
 #include "common/common.hpp"
+#include "common/compression_helper.hpp"
+#include "config.hpp"
 #include "distplusplus.grpc.pb.h"
 #include "distplusplus.pb.h"
 #include "fallback.hpp"
@@ -109,6 +111,9 @@ static int func(ArgsVecSpan argv) { // NOLINT(readability-function-cognitive-com
     std::ifstream cppOutfileStream(cppOutfile);
     std::string cppOutfileContent((std::istreambuf_iterator<char>(cppOutfileStream)),
                                   std::istreambuf_iterator<char>());
+    // TODO: could stream directly into compressor
+    const distplusplus::common::Compressor compressor(config.compressionType(), config.compressionLevel(),
+                                                      cppOutfileContent);
 
     const std::string &preprocessorStderr = Preprocessor.get_stderr();
     if (!preprocessorStderr.empty()) {
@@ -117,10 +122,12 @@ static int func(ArgsVecSpan argv) { // NOLINT(readability-function-cognitive-com
 
     Client client;
     const distplusplus::CompileAnswer answer =
-        client.send(compilerName, args, fileName, cppOutfileContent, cwd);
+        client.send(compilerName, args, fileName, compressor.data(), cwd);
     if (!answer.outputfile().content().empty()) {
+        const distplusplus::common::Decompressor decompressor(answer.outputfile().compressiontype(),
+                                                              answer.outputfile().content());
         std::ofstream outStream(parser.outfile());
-        outStream << answer.outputfile().content();
+        outStream << decompressor.data();
         outStream.close();
     }
     if (!answer.stderr().empty()) {

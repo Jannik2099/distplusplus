@@ -12,6 +12,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 using namespace distplusplus;
@@ -29,7 +30,7 @@ private:
 
 public:
     CompileAnswer send(const std::string &compilerName, ArgsVecSpan args, const std::string &fileName,
-                       const std::string &fileContent, const std::string &cwd);
+                       std::string_view fileContent, const std::string &cwd);
     Client() = default;
 };
 

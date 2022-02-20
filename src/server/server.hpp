@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/common.hpp"
+#include "common/compression_helper.hpp"
 #include "distplusplus.grpc.pb.h"
 #include "distplusplus.pb.h"
 
@@ -36,6 +37,7 @@ public:
 class Server final : public distplusplus::CompilationServer::Service {
 private:
     void reservationReaper();
+    const distplusplus::common::CompressorFactory compressorFactory;
     const std::uint64_t jobsMax;
     std::atomic<std::uint64_t> jobsRunning = 0;
     std::multiset<_internal::reservationType, _internal::ReservationCompare> reservations;
@@ -48,7 +50,7 @@ public:
     grpc::Status Distribute(grpc::ServerContext *context, const distplusplus::CompileRequest *request,
                             distplusplus::CompileAnswer *answer) final;
     Server() = delete;
-    Server(std::uint64_t maxJobs);
+    Server(std::uint64_t maxJobs, distplusplus::common::CompressorFactory compressorFactory);
     ~Server() final = default;
     Server(const Server &) = delete;
     Server(Server &&) = delete;

@@ -58,7 +58,40 @@ static std::vector<std::string> getServers(const toml::table &configFile) {
     return ret;
 }
 
-Config::Config() : _stateDir(getStateDir()), configFile(getConfigFile()), _servers(getServers(configFile)) {
+static distplusplus::CompressionType getCompressionType(const toml::table &configFile) {
+    const char *compressionEnv = getenv("DISTPLUSPLUS_COMPRESSION");
+    std::string compressionString;
+    if (compressionEnv != nullptr) {
+        compressionString = compressionEnv;
+    } else {
+        compressionString = configFile["compression"].value_or(DISTPLUSPLUS_DEFAULT_COMPRESSION_STR);
+    }
+    if (compressionString == "NONE") {
+        return NONE;
+    }
+    if (compressionString == "zstd") {
+        return zstd;
+    }
+    const std::string err_msg("unrecognized compression type " + compressionString);
+    BOOST_LOG_TRIVIAL(error) << err_msg;
+    throw std::runtime_error(err_msg);
+}
+
+static std::int64_t getCompressionLevel(const toml::table &configFile) {
+    const char *compressionLevelEnv = getenv("DISTPLUSPLUS_COMPRESSION_LEVEL");
+    std::int64_t compressionLevel = 0;
+    if (compressionLevelEnv != nullptr) {
+        compressionLevel = std::atoll(compressionLevelEnv);
+    } else {
+        compressionLevel = configFile["compression-level"].value_or(1);
+    }
+    return compressionLevel;
+}
+
+// really should rework the initialization
+Config::Config()
+    : _stateDir(getStateDir()), configFile(getConfigFile()), _servers(getServers(configFile)),
+      _compressionType(getCompressionType(configFile)), _compressionLevel(getCompressionLevel(configFile)) {
     if (_servers.empty()) {
         const std::string err_msg("config file " + *configFile.source().path +
                                   " provides empty list of hosts");
@@ -70,6 +103,8 @@ Config::Config() : _stateDir(getStateDir()), configFile(getConfigFile()), _serve
 const std::vector<std::string> &Config::servers() const { return _servers; }
 const std::filesystem::path &Config::stateDir() const { return _stateDir; }
 const int &Config::reservationAttemptTimeout() const { return _reservationAttemptTimeout; }
+distplusplus::CompressionType Config::compressionType() const { return _compressionType; }
+std::int64_t Config::compressionLevel() const { return _compressionLevel; }
 
 const Config config;
 }; // namespace distplusplus::client

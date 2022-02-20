@@ -16,6 +16,8 @@ add_library(distplusplus::client::client ALIAS client)
 target_link_libraries(client distplusplus::protobuf distplusplus::grpc)
 obj_propagate_targets(client)
 
-target_link_libraries(distplusplus distplusplus::client::client distplusplus::client::parser distplusplus::client::config distplusplus::common distplusplus::common distplusplus::protobuf distplusplus::grpc Boost::log -ltbb)
+target_link_libraries(distplusplus distplusplus::client::client distplusplus::client::parser distplusplus::client::config distplusplus::common distplusplus::common distplusplus::protobuf distplusplus::grpc distplusplus::common::compression_helper Boost::log -ltbb)
 
 install(TARGETS distplusplus RUNTIME)
+
+target_compile_definitions(config-client PRIVATE $<TARGET_PROPERTY:distplusplus::common::compression_helper,INTERFACE_COMPILE_DEFINITIONS>)

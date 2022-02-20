@@ -13,6 +13,7 @@
 #include <span>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -77,7 +78,7 @@ private:
 
 public:
     explicit Tempfile(const path &name);
-    Tempfile(const path &name, const std::string &content);
+    Tempfile(const path &name, std::string_view content);
     Tempfile(const Tempfile &) = delete;
     Tempfile(Tempfile &&) noexcept = default;
     ~Tempfile();
