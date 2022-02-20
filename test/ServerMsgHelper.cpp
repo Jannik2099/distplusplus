@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
         std::cout << distplusplus::common::mapGRPCStatus(ret.error_code());
         std::cerr << "ServerMsgHelper: rpc call " << messageType << " returned "
                   << distplusplus::common::mapGRPCStatus(ret.error_code()) << " " << ret.error_message()
-                  << std::endl;
+                  << " " << ret.error_details() << std::endl;
         return 1;
     }
 }
