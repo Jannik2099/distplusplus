@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034
 
+# helper values
+DUMMY_FILE='{"name":"main.c","compressionType":0,"content":"aW50IG1haW4oKSB7fQ=="}'
+DUMMY_FILE_ZSTD='{"name":"main.c","compressionType":1,"content":"KLUv/QRIaQAAaW50IG1haW4oKSB7fS9XBfA="}'
+DUMMY_FILE_BAD_COMPRESSION='{"name":"main.c","compressionType":1,"content":"aW50IG1haW4oKSB7fQ=="}'
+
 TEST="${1}"
 NAME="${2}"
 CLIENT="env LLVM_PROFILE_FILE=${NAME}-client.profraw ${3}"

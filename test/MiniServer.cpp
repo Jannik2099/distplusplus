@@ -1,5 +1,6 @@
 #include "common/argsvec.hpp"
 #include "common/common.hpp"
+#include "common/compression_helper.hpp"
 #include "distplusplus.grpc.pb.h"
 #include "distplusplus.pb.h"
 
@@ -56,7 +57,9 @@ public:
         }
         const boost::filesystem::path compilerPath = boost::process::search_path(request->compiler());
 
-        distplusplus::common::Tempfile inputFile(request->inputfile().name(), request->inputfile().content());
+        const distplusplus::common::Decompressor decompressor(request->inputfile().compressiontype(),
+                                                              request->inputfile().content());
+        distplusplus::common::Tempfile inputFile(request->inputfile().name(), decompressor.data());
         distplusplus::common::Tempfile outputFile(
             std::string(std::filesystem::path(request->inputfile().name()).stem()) + std::string(".o"));
 
@@ -73,14 +76,17 @@ public:
         std::ifstream fileStream(outputFile);
         std::stringstream fileContent;
         fileContent << fileStream.rdbuf();
-        answer->mutable_outputfile()->set_content(fileContent.str());
+        const distplusplus::common::Compressor compressor(DISTPLUSPLUS_DEFAULT_COMPRESSION_FULL, 1,
+                                                          fileContent.str());
+        answer->mutable_outputfile()->set_compressiontype(compressor.compressionType());
+        answer->mutable_outputfile()->set_content(compressor.data().data(), compressor.data().size());
         return grpc::Status::OK;
     }
 };
 } // namespace
 
-static volatile std::sig_atomic_t signalFlag =
-    0; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+static volatile std::sig_atomic_t signalFlag = 0;
 
 static void signalHandler(int signal) {
     signalFlag = 1;

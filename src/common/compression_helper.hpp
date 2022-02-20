@@ -24,6 +24,7 @@ public:
     public:
         Compressor(distplusplus::CompressionType compressionType, std::int64_t compressionLevel,
                    const std::string &input);
+        [[nodiscard]] distplusplus::CompressionType compressionType() const;
         [[nodiscard]] std::string_view data() const;
     };
 

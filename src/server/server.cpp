@@ -13,6 +13,7 @@
 #include <exception>
 #include <fstream>
 #include <functional>
+#include <ios>
 #include <iostream>
 #include <iterator>
 #include <memory>
@@ -183,8 +184,19 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
         // the client could be a path to an unix socket too
         std::string clientIPDelimited = clientIP;
         std::replace(clientIPDelimited.begin(), clientIPDelimited.end(), '/', '-');
-        const distplusplus::common::Decompressor decompressor(request->inputfile().compressiontype(),
-                                                              request->inputfile().content());
+
+        // C++ is a pretty language
+        const distplusplus::common::Decompressor decompressor = [&] {
+            try {
+                return distplusplus::common::Decompressor(request->inputfile().compressiontype(),
+                                                          request->inputfile().content());
+            } catch (const std::ios_base::failure &e) {
+                BOOST_LOG_TRIVIAL(warning)
+                    << "client " << clientIP << " sent job but raised decompressor error" << e.what();
+                throw grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, "error in decompressor", e.what());
+            }
+        }();
+
         const distplusplus::common::Tempfile inputFile(clientIPDelimited + "." + request->inputfile().name(),
                                                        decompressor.data());
 
@@ -223,6 +235,8 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
         answer->mutable_outputfile()->set_compressiontype(compressorFactory.compressionType());
         answer->mutable_outputfile()->set_content(compressor.data().data(), compressor.data().size());
         return grpc::Status::OK;
+    } catch (const grpc::Status &status) {
+        return status;
     } catch (const std::exception &e) {
         exceptionAbortHandler(e);
     } catch (...) {

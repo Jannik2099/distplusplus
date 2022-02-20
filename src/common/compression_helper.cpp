@@ -48,6 +48,8 @@ Compressor::Compressor(distplusplus::CompressionType compressionType, std::int64
     }
 }
 
+distplusplus::CompressionType Compressor::compressionType() const { return _compressionType; }
+
 std::string_view Compressor::data() const {
     if (_data.index() == 0) {
         return std::get<0>(_data);

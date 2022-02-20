@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
         std::cerr << "ServerMsgHelper: DISTPLUSPLUS_LISTEN_ADDRESS not set!" << std::endl;
         return 1;
     }
+
     grpc::ChannelArguments channelArgs;
     channelArgs.SetMaxReceiveMessageSize(INT_MAX);
     std::unique_ptr<distplusplus::CompilationServer::Stub> stub = distplusplus::CompilationServer::NewStub(

@@ -1,8 +1,8 @@
 add_executable(ServerMsgHelper "ServerMsgHelper.cpp")
-target_link_libraries(ServerMsgHelper distplusplus::protobuf distplusplus::grpc distplusplus::common)
+target_link_libraries(ServerMsgHelper distplusplus::protobuf distplusplus::grpc distplusplus::common distplusplus::common::compression_helper)
 
 add_executable(MiniServer "MiniServer.cpp")
-target_link_libraries(MiniServer distplusplus::protobuf distplusplus::grpc distplusplus::common Boost::filesystem)
+target_link_libraries(MiniServer distplusplus::protobuf distplusplus::grpc distplusplus::common distplusplus::common::compression_helper Boost::filesystem)
 
 function(add_simple_test name libraries)
 	set(filename "${CMAKE_CURRENT_SOURCE_DIR}/${name}.cpp")
