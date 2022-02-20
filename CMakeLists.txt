@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.17)
 project(distplusplus)
 
+include(FindPkgConfig)
+include(CheckIncludeFileCXX)
+include(CTest)
+include(ExternalProject)
+
 # see https://gitlab.kitware.com/cmake/cmake/-/issues/18090
 macro(obj_propagate_targets name)
 	target_sources(${name} INTERFACE $<TARGET_OBJECTS:${name}>)
@@ -21,7 +26,8 @@ option(COVERAGE "build with coverage data" OFF)
 option(USE_DEFAULT_FLAGS "use default compiler flags" ON)
 option(SYSTEM_BOOST "use system boost" ON)
 option(SYSTEM_GRPC "use system protobuf & grpc" ON)
-option(ZSTD "use zstd from boost" ON)
+set(ZSTD ON) # can't be bothered to write proper detection logic
+pkg_search_module(zstd REQUIRED IMPORTED_TARGET libzstd)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -47,12 +53,6 @@ if(USE_DEFAULT_FLAGS)
 	set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
 	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g3 -fno-omit-frame-pointer")
 endif()
-
-
-include(FindPkgConfig)
-include(CheckIncludeFileCXX)
-include(CTest)
-include(ExternalProject)
 
 add_custom_target(protoc_ready)
 if(SYSTEM_GRPC)
@@ -179,11 +179,10 @@ endif()
 
 if(SYSTEM_BOOST)
 	add_compile_definitions("BOOST_ALL_DYN_LINK=1")
-	find_package(Boost REQUIRED COMPONENTS filesystem log program_options iostreams)
+	# at least 1.70 due to zstd, no clue about the rest
+	find_package(Boost 1.70 REQUIRED COMPONENTS filesystem log program_options iostreams)
 	add_custom_target(Boost)
 else()
-	pkg_search_module(zstd REQUIRED IMPORTED_TARGET libzstd)
-
 	add_custom_target(Boost_Build
 		COMMAND
 			${CMAKE_CURRENT_SOURCE_DIR}/third_party/boost/tools/build/src/engine/build.sh
