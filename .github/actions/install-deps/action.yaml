@@ -21,5 +21,5 @@ runs:
       shell: bash
     - run: sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main"
       shell: bash
-    - run: sudo apt-get install -y clang-13 clang-tidy-13 lld-13 cmake ninja-build autoconf automake libtool make libmsgsl-dev libtbb2 libtbb-dev ccache
+    - run: sudo apt-get install -y clang-13 clang-tidy-13 lld-13 cmake ninja-build autoconf automake libtool make libmsgsl-dev libtbb2 libtbb-dev libzstd1 libzstd-dev ccache
       shell: bash

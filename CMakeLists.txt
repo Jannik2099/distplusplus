@@ -182,6 +182,8 @@ if(SYSTEM_BOOST)
 	find_package(Boost REQUIRED COMPONENTS filesystem log program_options iostreams)
 	add_custom_target(Boost)
 else()
+	pkg_search_module(zstd REQUIRED IMPORTED_TARGET libzstd)
+
 	add_custom_target(Boost_Build
 		COMMAND
 			${CMAKE_CURRENT_SOURCE_DIR}/third_party/boost/tools/build/src/engine/build.sh
@@ -208,9 +210,9 @@ else()
 			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_program_options.a
 			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_iostreams.a
 		COMMAND
-		${CMAKE_CURRENT_BINARY_DIR}/third_party/boost-build/b2 --prefix=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install --with-log --with-filesystem --with-program_options --stagedir=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/stage link=static threading=multi
+		${CMAKE_CURRENT_BINARY_DIR}/third_party/boost-build/b2 --prefix=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install --with-log --with-filesystem --with-program_options --with-iostreams --stagedir=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/stage link=static threading=multi
 		COMMAND
-			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost-build/b2 --prefix=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install --with-log --with-filesystem --with-program_options --stagedir=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/stage link=static threading=multi install
+			${CMAKE_CURRENT_BINARY_DIR}/third_party/boost-build/b2 --prefix=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install --with-log --with-filesystem --with-program_options --with-iostreams --stagedir=${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/stage link=static threading=multi install
 		WORKING_DIRECTORY
 			${CMAKE_CURRENT_SOURCE_DIR}/third_party/boost
 	)
@@ -240,6 +242,7 @@ else()
 	add_library(boost_iostreams STATIC IMPORTED)
 	add_library(Boost::iostreams ALIAS boost_iostreams)
 	set_property(TARGET boost_iostreams PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/third_party/boost/install/lib/libboost_iostreams.a)
+	target_link_libraries(boost_iostreams INTERFACE PkgConfig::zstd)
 	add_dependencies(boost_iostreams Boost)
 endif()
 
