@@ -10,3 +10,5 @@ add_simple_test(TestParserTarget "distplusplus::client::parser;distplusplus::com
 add_simple_test(TestParserMultiArgs "distplusplus::client::parser;distplusplus::common")
 
 add_bash_test(TestClientCompile)
+add_bash_test(TestClientCompressNONE)
+add_bash_test(TestClientCompresszstd)

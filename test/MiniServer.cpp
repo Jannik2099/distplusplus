@@ -68,6 +68,20 @@ public:
         argsVec.emplace_back(outputFile.c_str());
         argsVec.emplace_back(inputFile.c_str());
 
+        const char *compressionEnv = getenv("DISTPLUSPLUS_COMPRESSION");
+        distplusplus::CompressionType compressionType = DISTPLUSPLUS_DEFAULT_COMPRESSION_FULL;
+        if (compressionEnv != nullptr) {
+            const std::string compressionString = compressionEnv;
+            if (compressionString == "NONE") {
+                compressionType = distplusplus::CompressionType::NONE;
+            } else if (compressionString == "zstd") {
+                compressionType = distplusplus::CompressionType::zstd;
+            } else {
+                std::cerr << "unrecognized compression type " << compressionString << std::endl;
+                exit(1);
+            }
+        }
+
         distplusplus::common::ProcessHelper compilerProcess(compilerPath, argsVec);
         answer->set_returncode(compilerProcess.returnCode());
         answer->set_stdout(compilerProcess.get_stdout());
@@ -76,8 +90,7 @@ public:
         std::ifstream fileStream(outputFile);
         std::stringstream fileContent;
         fileContent << fileStream.rdbuf();
-        const distplusplus::common::Compressor compressor(DISTPLUSPLUS_DEFAULT_COMPRESSION_FULL, 1,
-                                                          fileContent.str());
+        const distplusplus::common::Compressor compressor(compressionType, 1, fileContent.str());
         answer->mutable_outputfile()->set_compressiontype(compressor.compressionType());
         answer->mutable_outputfile()->set_content(compressor.data().data(), compressor.data().size());
         return grpc::Status::OK;

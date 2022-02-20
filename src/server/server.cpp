@@ -231,7 +231,9 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
         std::ifstream fileStream(outputFile);
         std::stringstream fileContent;
         fileContent << fileStream.rdbuf();
-        const distplusplus::common::Compressor compressor = compressorFactory(std::move(fileContent).str());
+        // TODO: prevent copy
+        const std::string fileContentString = fileContent.str();
+        const distplusplus::common::Compressor compressor = compressorFactory(fileContentString);
         answer->mutable_outputfile()->set_compressiontype(compressorFactory.compressionType());
         answer->mutable_outputfile()->set_content(compressor.data().data(), compressor.data().size());
         return grpc::Status::OK;
