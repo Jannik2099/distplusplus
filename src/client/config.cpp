@@ -1,9 +1,14 @@
 #include "config.hpp"
 
+#include <algorithm>
+#include <array>
 #include <boost/log/trivial.hpp>
 #include <cstdlib>
 
 namespace distplusplus::client {
+
+static constexpr std::array soundsLikeNo = {"0", "NO", "no", "OFF", "off"};
+static constexpr std::array soundsLikeYes = {"1", "YES", "yes", "ON", "on"};
 
 static std::filesystem::path getStateDir() {
     std::filesystem::path ret;
@@ -88,10 +93,25 @@ static std::int64_t getCompressionLevel(const toml::table &configFile) {
     return compressionLevel;
 }
 
+static bool getFallback(const toml::table &configFile) {
+    const char *fallbackEnv = getenv("DISTPLUSPLUS_FALLBACK");
+    if (fallbackEnv != nullptr) {
+        const std::string fallbackEnvString = fallbackEnv;
+        if (std::ranges::find(soundsLikeNo, fallbackEnvString) != soundsLikeNo.end()) {
+            return false;
+        }
+        if (std::ranges::find(soundsLikeYes, fallbackEnvString) != soundsLikeYes.end()) {
+            return true;
+        }
+    }
+    return configFile["fallback"].value_or(true);
+}
+
 // really should rework the initialization
 Config::Config()
     : _stateDir(getStateDir()), configFile(getConfigFile()), _servers(getServers(configFile)),
-      _compressionType(getCompressionType(configFile)), _compressionLevel(getCompressionLevel(configFile)) {
+      _compressionType(getCompressionType(configFile)), _compressionLevel(getCompressionLevel(configFile)),
+      _fallback(getFallback(configFile)) {
     if (_servers.empty()) {
         const std::string err_msg("config file " + *configFile.source().path +
                                   " provides empty list of hosts");
@@ -105,6 +125,7 @@ const std::filesystem::path &Config::stateDir() const { return _stateDir; }
 const int &Config::reservationAttemptTimeout() const { return _reservationAttemptTimeout; }
 distplusplus::CompressionType Config::compressionType() const { return _compressionType; }
 std::int64_t Config::compressionLevel() const { return _compressionLevel; }
+bool Config::fallback() const { return _fallback; }
 
 const Config config;
 }; // namespace distplusplus::client

@@ -19,6 +19,7 @@ private:
     const int _reservationAttemptTimeout = 10;
     const distplusplus::CompressionType _compressionType;
     const std::int64_t _compressionLevel;
+    const bool _fallback = true;
 
 public:
     Config();
@@ -28,6 +29,7 @@ public:
     [[nodiscard]] const int &reservationAttemptTimeout() const;
     [[nodiscard]] distplusplus::CompressionType compressionType() const;
     [[nodiscard]] std::int64_t compressionLevel() const;
+    [[nodiscard]] bool fallback() const;
 };
 
 const extern Config config;

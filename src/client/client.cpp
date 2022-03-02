@@ -112,7 +112,6 @@ CompileAnswer Client::send(const std::string &compilerName, ArgsVecSpan args, co
     if (status.error_code() == grpc::StatusCode::OK) {
         return compileAnswer;
     }
-    // TODO: configure if should fallback
     // TODO: prolly should have better formatting
     BOOST_LOG_TRIVIAL(error) << "distributing to " << context.peer() << " failed with gRPC error "
                              << common::mapGRPCStatus(status.error_code()) << " " << status.error_message()

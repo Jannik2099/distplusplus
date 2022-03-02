@@ -152,6 +152,10 @@ int main(int argc, char *argv[]) { // NOLINT(bugprone-exception-escape)
     try {
         ret = func(argsSpan);
     } catch (FallbackSignal) {
+        if (!config.fallback()) {
+            BOOST_LOG_TRIVIAL(error) << "failed to distribute and local fallback is disabled, exiting";
+            return -1;
+        }
         const int compilerPos = (std::filesystem::path(argsSpan[0]).stem() == "distplusplus") ? 1 : 0;
         std::string compilerPath(argsSpan[compilerPos]);
         // otherwise we would recurse on ourself
