@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 if [ "$(basename "$(realpath .)")" != "build" ]; then
-	echo "error: this script is meant to be run in the build dir"
-	exit 1
+    echo "error: this script is meant to be run in the build dir"
+    exit 1
 fi
 
 LLVM_PROFDATA=${LLVM_PROFDATA:="llvm-profdata"}
@@ -10,8 +10,8 @@ LLVM_COV=${LLVM_COV:="llvm-cov"}
 mapfile -t objs_pre < <(find . -path './test' -prune -o -path './protos' -prune -o -name '*.o' -print)
 objs=()
 for obj in "${objs_pre[@]}"; do
-	objs+=("-object")
-	objs+=("${obj}")
+    objs+=("-object")
+    objs+=("${obj}")
 done
 mapfile -t profraws < <(find . -name '*.profraw')
 
