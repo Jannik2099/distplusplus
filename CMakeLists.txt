@@ -33,8 +33,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # no GNU C
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 # We don't use aliasing or interposition'
 string(APPEND CMAKE_CXX_FLAGS " -fno-semantic-interposition -fstrict-aliasing -Wall")
+
 if(COVERAGE)
 	if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 		message(FATAL_ERROR "coverage requires clang")
