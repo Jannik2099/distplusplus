@@ -10,9 +10,11 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <distplusplus.pb.h>
 #include <exception>
 #include <fstream>
 #include <functional>
+#include <grpcpp/server_context.h>
 #include <ios>
 #include <iostream>
 #include <iterator>
@@ -27,6 +29,7 @@ namespace distplusplus::server {
 
 namespace _internal {
 
+// NOLINTNEXTLINE(readability-identifier-length)
 bool ReservationCompare::operator()(const reservationType &a, const reservationType &b) const {
     return std::get<1>(a) < std::get<1>(b);
 }
@@ -110,6 +113,36 @@ void Server::reservationReaper() {
                     << "reaped " << diff << " stale reservations - consider increasing reservation timeout";
             }
         }
+    }
+}
+
+grpc::Status Server::Query(grpc::ServerContext *context, const distplusplus::ServerQuery *query,
+                           distplusplus::QueryAnswer *answer) {
+    try {
+        // TODO: more logging
+        const std::string &compiler = query->compiler();
+        if (std::filesystem::path(compiler).filename() != compiler) {
+            BOOST_LOG_TRIVIAL(warning) << "client " << context->peer() << " queried for compiler " << compiler
+                                       << " which does not look like a basename";
+            return {grpc::StatusCode::INVALID_ARGUMENT,
+                    "compiler " + compiler + " does not look like a basename"};
+        }
+        if (!checkCompilerAllowed(compiler)) {
+            BOOST_LOG_TRIVIAL(warning)
+                << "client " << context->peer() << " queried for non-allowed compiler " << compiler;
+            return {grpc::StatusCode::INVALID_ARGUMENT, "compiler " + compiler + " is not on allowlist"};
+        }
+        answer->set_compilersupported(true);
+        // TODO: compression type handling
+        answer->set_compressiontypesupported(true);
+        // TODO: load reporting
+        answer->set_currentload(0);
+        answer->set_maxjobs(jobsMax);
+        return grpc::Status::OK;
+    } catch (const std::exception &e) {
+        exceptionAbortHandler(e);
+    } catch (...) {
+        exceptionAbortHandler();
     }
 }
 

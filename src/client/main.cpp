@@ -120,9 +120,8 @@ static int func(ArgsVecSpan argv) { // NOLINT(readability-function-cognitive-com
         std::cerr << preprocessorStderr << std::endl;
     }
 
-    Client client;
-    const distplusplus::CompileAnswer answer =
-        client.send(compilerName, args, fileName, compressor.data(), cwd);
+    Client client = ClientFactory(compilerName);
+    const distplusplus::CompileAnswer answer = client.send(args, fileName, compressor.data(), cwd);
     if (!answer.outputfile().content().empty()) {
         const distplusplus::common::Decompressor decompressor(answer.outputfile().compressiontype(),
                                                               answer.outputfile().content());
@@ -183,7 +182,9 @@ int main(int argc, char *argv[]) { // NOLINT(bugprone-exception-escape)
         std::cerr << localInvocation.get_stderr() << std::endl;
         std::cout << localInvocation.get_stdout() << std::endl;
         return localInvocation.returnCode();
-    } catch (...) {
+    }
+    // TODO: this destroys the call stack. Perhaps find another solution to calling Tempfile destructors?
+    catch (...) {
         throw;
     }
     return ret;

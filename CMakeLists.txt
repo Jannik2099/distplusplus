@@ -39,6 +39,8 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 # We don't use aliasing or interposition'
 string(APPEND CMAKE_CXX_FLAGS " -fno-semantic-interposition -fstrict-aliasing -Wall")
 
+pkg_search_module(lmdb REQUIRED IMPORTED_TARGET GLOBAL lmdb)
+
 if(COVERAGE)
     if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         message(FATAL_ERROR "coverage requires clang")

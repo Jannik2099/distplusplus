@@ -28,7 +28,9 @@ using reservationType = std::pair<reservationTypeA, reservationTypeB>;
 
 class ReservationCompare final {
 public:
+    // NOLINTNEXTLINE(readability-identifier-length)
     bool operator()(const reservationType &a, const reservationType &b) const;
+    // NOLINTNEXTLINE(readability-identifier-length)
     bool operator()(const reservationTypeB &a, const reservationType &b) const;
 };
 
@@ -45,6 +47,8 @@ private:
     std::jthread reservationReaperThread = std::jthread(&Server::reservationReaper, this);
 
 public:
+    grpc::Status Query(grpc::ServerContext *context, const distplusplus::ServerQuery *query,
+                       distplusplus::QueryAnswer *answer) final;
     grpc::Status Reserve(grpc::ServerContext *context, const distplusplus::Reservation *reservation,
                          distplusplus::ReservationAnswer *answer) final;
     grpc::Status Distribute(grpc::ServerContext *context, const distplusplus::CompileRequest *request,

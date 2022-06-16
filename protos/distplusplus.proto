@@ -34,16 +34,19 @@ message CompileAnswer {
     string stdout = 2;
     string stderr = 3;
     optional File outputFile = 4;
+    uint32 currentLoad = 5;
 }
 
 message ServerQuery {
     string compiler = 1;
+    CompressionType desiredCompressionType = 2;
 }
 
 message QueryAnswer {
     bool compilerSupported = 1;
-    repeated CompressionType supportedCompressionTypes = 2;
-    int32 maxJobs = 3;
+    bool compressionTypeSupported = 2;
+    uint32 currentLoad = 3;
+    uint64 maxJobs = 4;
 }
 
 message Reservation {}
@@ -52,6 +55,7 @@ message ReservationAnswer {
     bool success = 1;
     optional string uuid = 2;
 }
+
 service CompilationServer {
     rpc Query(ServerQuery) returns (QueryAnswer) {}
     rpc Reserve(Reservation) returns (ReservationAnswer) {}

@@ -19,6 +19,8 @@
 #include <grpcpp/security/credentials.h>
 #include <grpcpp/server.h>
 #include <grpcpp/server_builder.h>
+#include <grpcpp/server_context.h>
+#include <grpcpp/support/status.h>
 #include <iostream>
 #include <list>
 #include <sstream>
@@ -34,6 +36,18 @@ private:
     std::list<std::string> uuidList;
 
 public:
+    grpc::Status Query(grpc::ServerContext * /*context*/, const distplusplus::ServerQuery *query,
+                       distplusplus::QueryAnswer *answer) final {
+        const std::string &compiler = query->compiler();
+        if (std::filesystem::path(compiler).stem() != compiler) {
+            return {grpc::StatusCode::INVALID_ARGUMENT, "compiler " + compiler + " is not a basename"};
+        }
+        // TODO: do the rest
+        answer->set_currentload(50);
+        answer->set_maxjobs(100);
+        return grpc::Status::OK;
+    }
+
     grpc::Status Reserve(grpc::ServerContext * /*context*/, const distplusplus::Reservation * /*reservation*/,
                          distplusplus::ReservationAnswer *answer) final {
         const std::string uuid = boost::uuids::to_string(boost::uuids::random_generator()());
