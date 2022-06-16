@@ -4,7 +4,7 @@ on:
   workflow_call:
     outputs:
       llvm_version:
-        value: "13"
+        value: "14"
 
 runs:
   using: "composite"
@@ -15,11 +15,11 @@ runs:
       shell: bash
     - run: wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | sudo apt-key add -
       shell: bash
-    - run: sudo apt-add-repository "deb https://apt.kitware.com/ubuntu/ focal main"
+    - run: sudo apt-add-repository "deb https://apt.kitware.com/ubuntu/ jammy main"
       shell: bash
     - run: wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
       shell: bash
-    - run: sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-14 main"
+    - run: sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-14 main"
       shell: bash
-    - run: sudo apt-get install -y clang-14 clang-tidy-14 lld-14 cmake ninja-build autoconf automake libtool make libmsgsl-dev libtbb2 libtbb-dev libzstd1 libzstd-dev ccache lmdb
+    - run: sudo apt-get install -y clang-14 clang-tidy-14 lld-14 cmake ninja-build autoconf automake libtool make libmsgsl-dev libtbb2 libtbb-dev libzstd1 libzstd-dev ccache liblmdb-dev liblmdb0 liblmdb++-dev
       shell: bash
