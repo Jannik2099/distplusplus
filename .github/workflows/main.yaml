@@ -31,7 +31,7 @@ jobs:
       - name: configure
         run: |
           mkdir build
-          cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=/usr/lib/ccache/clang-14 -DCMAKE_CXX_COMPILER=/usr/lib/ccache/clang++-14 -DSYSTEM_BOOST=FALSE -DSYSTEM_GRPC=FALSE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCOVERAGE=TRUE -DLLVM_PROFDATA=llvm-profdata-14 -DLLVM_COV=llvm-cov-14 -GNinja
+          cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=/usr/lib/ccache/clang-14 -DCMAKE_CXX_COMPILER=/usr/lib/ccache/clang++-14 -DSYSTEM_LMDBXX=FALSE -DSYSTEM_BOOST=TRUE -DSYSTEM_GRPC=FALSE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCOVERAGE=TRUE -DLLVM_PROFDATA=llvm-profdata-14 -DLLVM_COV=llvm-cov-14 -GNinja
       - name: build
         run: ninja
         working-directory: ./build

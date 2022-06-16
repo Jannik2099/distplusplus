@@ -7,3 +7,6 @@
 [submodule "third_party/grpc"]
 	path = third_party/grpc
 	url = https://github.com/grpc/grpc.git
+[submodule "third_party/lmdbxx"]
+	path = third_party/lmdbxx
+	url = https://github.com/hoytech/lmdbxx.git

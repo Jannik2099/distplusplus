@@ -25,6 +25,7 @@ endmacro()
 
 option(COVERAGE "build with coverage data" OFF)
 option(USE_DEFAULT_FLAGS "use default compiler flags" ON)
+option(SYSTEM_LMDBXX "use system lmdb++" ON)
 option(SYSTEM_BOOST "use system boost" ON)
 option(SYSTEM_GRPC "use system protobuf & grpc" ON)
 set(ZSTD ON) # can't be bothered to write proper detection logic
@@ -38,8 +39,6 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 # We don't use aliasing or interposition'
 string(APPEND CMAKE_CXX_FLAGS " -fno-semantic-interposition -fstrict-aliasing -Wall")
-
-pkg_search_module(lmdb REQUIRED IMPORTED_TARGET GLOBAL lmdb)
 
 if(COVERAGE)
     if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -58,6 +57,13 @@ if(USE_DEFAULT_FLAGS)
     endif()
     set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g3 -fno-omit-frame-pointer")
+endif()
+
+pkg_search_module(lmdb REQUIRED IMPORTED_TARGET GLOBAL lmdb)
+if(SYSTEM_LMDBXX)
+    CheckIncludeFileCXX(lmdb++.h)
+else()
+    include_directories(BEFORE SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/lmdbxx)
 endif()
 
 add_custom_target(protoc_ready)
