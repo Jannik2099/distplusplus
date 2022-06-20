@@ -4,17 +4,20 @@
 #include "parser.hpp"
 
 #include <algorithm>
+#include <array>
 #include <boost/core/demangle.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/process.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cstdlib>
 #include <distplusplus.pb.h>
 #include <exception>
 #include <fstream>
 #include <functional>
 #include <grpcpp/server_context.h>
+#include <gsl/gsl_util>
 #include <ios>
 #include <iostream>
 #include <iterator>
@@ -132,11 +135,19 @@ grpc::Status Server::Query(grpc::ServerContext *context, const distplusplus::Ser
                 << "client " << context->peer() << " queried for non-allowed compiler " << compiler;
             return {grpc::StatusCode::INVALID_ARGUMENT, "compiler " + compiler + " is not on allowlist"};
         }
+        std::array<double, 1> loadarr = {0};
+        if (getloadavg(loadarr.data(), 1) != 1) {
+            BOOST_LOG_TRIVIAL(error) << "failed to get load average";
+            answer->set_currentload(0);
+        } else {
+            auto loadavg = gsl::narrow_cast<uint32_t>(loadarr[0] / gsl::narrow_cast<double>(jobsMax) * 100);
+            loadavg = std::min(loadavg, 100U);
+            BOOST_LOG_TRIVIAL(debug) << "reported load average " << std::to_string(loadavg);
+            answer->set_currentload(loadavg);
+        }
         answer->set_compilersupported(true);
         // TODO: compression type handling
         answer->set_compressiontypesupported(true);
-        // TODO: load reporting
-        answer->set_currentload(0);
         answer->set_maxjobs(jobsMax);
         return grpc::Status::OK;
     } catch (const std::exception &e) {
