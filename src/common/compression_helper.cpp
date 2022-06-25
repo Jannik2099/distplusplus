@@ -43,7 +43,7 @@ Compressor::Compressor(distplusplus::CompressionType compressionType, std::int64
         const std::string err = "encountered unknown CompressionType enum value " +
                                 std::to_string(compressionType) + " in compressor";
         BOOST_LOG_TRIVIAL(fatal) << err;
-        throw std::runtime_error(err);
+        throw std::invalid_argument(err);
     }
     }
 }
@@ -83,16 +83,18 @@ Decompressor::Decompressor(distplusplus::CompressionType compressionType, const 
         out.push(origin);
         bios::copy(out, decompressed);
         _data = std::move(decompressed).str();
-#else
-        // TODO: throw decomp error
-#endif
         break;
+#else
+        const std::string err = "attempted to use zstd but built without zstd support";
+        BOOST_LOG_TRIVIAL(fatal) << err;
+        throw std::runtime_error(err);
+#endif
     }
     default: {
         const std::string err = "encountered unknown CompressionType enum value " +
                                 std::to_string(_compressionType) + " in decompressor";
         BOOST_LOG_TRIVIAL(fatal) << err;
-        throw std::runtime_error(err);
+        throw std::invalid_argument(err);
     }
     }
 }

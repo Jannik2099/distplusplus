@@ -22,6 +22,19 @@ using std::filesystem::path;
 
 namespace distplusplus::common {
 
+[[maybe_unused]] static constexpr const char *compressionType_to_string(distplusplus::CompressionType compressionType) {
+    switch(compressionType) {
+        case NONE:
+            return "NONE";
+        case zstd:
+            return "zstd";
+            // NOLINTNEXTLINE(bugprone-branch-clone)
+        case CompressionType_INT_MAX_SENTINEL_DO_NOT_USE_:;
+        case CompressionType_INT_MIN_SENTINEL_DO_NOT_USE_:;
+    }
+    throw std::runtime_error("encountered unexpected compression type value " + std::to_string(compressionType));
+}
+
 [[maybe_unused]] static void assertAndRaise(bool condition, const std::string &msg) {
 #ifdef NDEBUG
     return;

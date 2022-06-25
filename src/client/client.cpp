@@ -75,9 +75,8 @@ void Client::QueryHelper::init() {
     }
     const bool compressionChanged = previousCompressionTypeString != std::to_string(currentCompressionType);
     if (compressionChanged) {
-        // TODO: this gives the enum, not the actual name
         BOOST_LOG_TRIVIAL(debug) << "desired compression type changed to "
-                                 << std::to_string(currentCompressionType);
+                                 << common::compressionType_to_string(currentCompressionType);
     }
     lmdb::txn parent_wtxn = compressionChanged ? lmdb::txn::begin(env, nullptr) : nullptr;
 
