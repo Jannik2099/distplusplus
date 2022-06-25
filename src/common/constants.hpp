@@ -6,11 +6,22 @@
 
 namespace distplusplus::common {
 
-enum Language {
+enum class Language {
     NONE,
     C,
     CXX,
 };
+
+[[maybe_unused]] static constexpr const char *language_to_string(Language language) {
+    switch (language) {
+    case Language::NONE:
+        return "none";
+    case Language::C:
+        return "C";
+    case Language::CXX:
+        return "CXX";
+    }
+}
 
 // This is for flags that ONLY affect the preprocessor
 // gcc flags from https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html

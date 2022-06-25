@@ -23,9 +23,10 @@ int main() {
         argsVec.push_back(outfile.c_str());
         Parser parser(argsVec);
         if (parser._language != distplusplus::common::Language::CXX) {
-            success = false;
-            std::cout << "input file extension " << extension << " was recognized as " << parser._language
+            const std::string lang_str = distplusplus::common::language_to_string(parser._language);
+            std::cout << "input file extension " << extension << " was recognized as " << lang_str
                       << std::endl;
+            success = false;
         }
     }
     if (!success) {

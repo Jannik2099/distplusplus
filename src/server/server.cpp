@@ -30,18 +30,18 @@ using distplusplus::common::ArgsVec;
 
 namespace distplusplus::server {
 
-namespace _internal {
+namespace {
 
 // NOLINTNEXTLINE(readability-identifier-length)
 bool ReservationCompare::operator()(const reservationType &a, const reservationType &b) const {
     return std::get<1>(a) < std::get<1>(b);
 }
 
-} // namespace _internal
+} // namespace
 
-[[noreturn]] static void exceptionAbortHandler(const std::exception &e) noexcept {
-    const std::string typeName = boost::core::demangle(typeid(e).name());
-    BOOST_LOG_TRIVIAL(fatal) << "caught exception in gRPC function: " << typeName << " " << e.what();
+[[noreturn]] static void exceptionAbortHandler(const std::exception &exception) noexcept {
+    const std::string typeName = boost::core::demangle(typeid(exception).name());
+    BOOST_LOG_TRIVIAL(fatal) << "caught exception in gRPC function: " << typeName << " " << exception.what();
     std::terminate();
 }
 
@@ -100,7 +100,7 @@ static bool checkCompilerAllowed(const std::string &compiler) {
 void Server::reservationReaper() {
     const std::stop_token token = reservationReaperThread.get_stop_token();
     while (!token.stop_requested()) {
-        const _internal::reservationTypeB timestamp = std::chrono::system_clock::now();
+        const reservationTypeB timestamp = std::chrono::system_clock::now();
         // TODO: make configurable
         std::this_thread::sleep_for(std::chrono::seconds(1));
         {
@@ -178,8 +178,7 @@ grpc::Status Server::Query(grpc::ServerContext *context, const distplusplus::Ser
     }
 }
 
-grpc::Status Server::Reserve([[maybe_unused]] grpc::ServerContext *context,
-                             [[maybe_unused]] const distplusplus::Reservation *reservation,
+grpc::Status Server::Reserve(grpc::ServerContext *context, const distplusplus::Reservation * /*reservation*/,
                              distplusplus::ReservationAnswer *answer) {
     try {
         std::uint64_t jobsCur = jobsMax;
@@ -221,8 +220,8 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
                                  << "cwd: " << request->cwd();
         {
             std::lock_guard lockGuard(reservationLock);
-            if (std::erase_if(reservations, [&clientUUID](const _internal::reservationType &a) {
-                    return std::get<0>(a) == clientUUID;
+            if (std::erase_if(reservations, [&clientUUID](const reservationType &comp) {
+                    return std::get<0>(comp) == clientUUID;
                 }) == 0) {
                 const std::string errorMessage = "error: uuid " + clientUUID + " not in reservation list.";
                 BOOST_LOG_TRIVIAL(warning) << "client " << clientIP << " sent job but uuid " << clientUUID

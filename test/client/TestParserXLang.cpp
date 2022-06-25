@@ -4,6 +4,7 @@
 
 #include "common/argsvec.hpp"
 #include "common/common.hpp"
+#include "common/constants.hpp"
 
 #include <iostream>
 
@@ -26,8 +27,8 @@ int main() {
         argsVec.push_back(outfile.c_str());
         Parser parser(argsVec);
         if (parser._language != distplusplus::common::Language::C) {
-            std::cout << "parsed language " << std::to_string(parser._language) << " didn't match "
-                      << std::to_string(distplusplus::common::Language::C) << std::endl;
+            const std::string lang_str = distplusplus::common::language_to_string(parser._language);
+            std::cout << "parsed language " << lang_str << " didn't match " << lang_str << std::endl;
             success = false;
         }
     }
@@ -45,8 +46,8 @@ int main() {
         argsVec.push_back(outfile.c_str());
         Parser parser(argsVec);
         if (parser._language != distplusplus::common::Language::CXX) {
-            std::cout << "parsed language " << std::to_string(parser._language) << " didn't match "
-                      << std::to_string(distplusplus::common::Language::CXX) << std::endl;
+            const std::string lang_str = distplusplus::common::language_to_string(parser._language);
+            std::cout << "parsed language " << lang_str << " didn't match " << lang_str << std::endl;
             success = false;
         }
     }

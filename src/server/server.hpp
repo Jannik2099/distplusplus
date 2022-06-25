@@ -20,7 +20,7 @@
 
 namespace distplusplus::server {
 
-namespace _internal {
+namespace {
 
 using reservationTypeA = std::string;
 using reservationTypeB = std::chrono::time_point<std::chrono::system_clock>;
@@ -34,7 +34,7 @@ public:
     bool operator()(const reservationTypeB &a, const reservationType &b) const;
 };
 
-} // namespace _internal
+} // namespace
 
 class Server final : public distplusplus::CompilationServer::Service {
 private:
@@ -42,7 +42,7 @@ private:
     const distplusplus::common::CompressorFactory compressorFactory;
     const std::uint64_t jobsMax;
     std::atomic<std::uint64_t> jobsRunning = 0;
-    std::multiset<_internal::reservationType, _internal::ReservationCompare> reservations;
+    std::multiset<reservationType, ReservationCompare> reservations;
     std::mutex reservationLock;
     std::jthread reservationReaperThread = std::jthread(&Server::reservationReaper, this);
 
