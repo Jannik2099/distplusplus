@@ -122,32 +122,53 @@ void Server::reservationReaper() {
 grpc::Status Server::Query(grpc::ServerContext *context, const distplusplus::ServerQuery *query,
                            distplusplus::QueryAnswer *answer) {
     try {
-        // TODO: more logging
+        const std::string clientIP = context->peer();
         const std::string &compiler = query->compiler();
         if (std::filesystem::path(compiler).filename() != compiler) {
-            BOOST_LOG_TRIVIAL(warning) << "client " << context->peer() << " queried for compiler " << compiler
+            BOOST_LOG_TRIVIAL(warning) << "client " << clientIP << " queried for compiler " << compiler
                                        << " which does not look like a basename";
             return {grpc::StatusCode::INVALID_ARGUMENT,
                     "compiler " + compiler + " does not look like a basename"};
         }
         if (!checkCompilerAllowed(compiler)) {
             BOOST_LOG_TRIVIAL(warning)
-                << "client " << context->peer() << " queried for non-allowed compiler " << compiler;
+                << "client " << clientIP << " queried for non-allowed compiler " << compiler;
             return {grpc::StatusCode::INVALID_ARGUMENT, "compiler " + compiler + " is not on allowlist"};
         }
+        answer->set_compilersupported(true);
+
         std::array<double, 1> loadarr = {0};
         if (getloadavg(loadarr.data(), 1) != 1) {
-            BOOST_LOG_TRIVIAL(error) << "failed to get load average";
+            BOOST_LOG_TRIVIAL(error) << "failed to get load average for client " << clientIP;
             answer->set_currentload(0);
         } else {
             auto loadavg = gsl::narrow_cast<uint32_t>(loadarr[0] / gsl::narrow_cast<double>(jobsMax) * 100);
             loadavg = std::min(loadavg, 100U);
-            BOOST_LOG_TRIVIAL(debug) << "reported load average " << std::to_string(loadavg);
+            BOOST_LOG_TRIVIAL(debug) << "reported load average " << std::to_string(loadavg) << " for client" << clientIP;
             answer->set_currentload(loadavg);
         }
-        answer->set_compilersupported(true);
-        // TODO: compression type handling
-        answer->set_compressiontypesupported(true);
+
+        switch (query->desiredcompressiontype()) {
+        // NOLINTNEXTLINE(bugprone-branch-clone)
+        case NONE:
+            answer->set_compressiontypesupported(true);
+            BOOST_LOG_TRIVIAL(debug) << "desired compression type NONE supported for client " << clientIP;
+            break;
+        case zstd:
+#ifdef DISTPLUSPLUS_WITH_ZSTD
+            answer->set_compressiontypesupported(true);
+            BOOST_LOG_TRIVIAL(debug) << "desired compression type zstd supported for client " << clientIP;
+#else
+            answer->set_compressiontypesupported(false);
+            BOOST_LOG_TRIVIAL(info) << "desired compression type zstd not supported for client " << clientIP;
+#endif
+            break;
+        // NOLINTNEXTLINE(bugprone-branch-clone)
+        case CompressionType_INT_MAX_SENTINEL_DO_NOT_USE_:;
+        case CompressionType_INT_MIN_SENTINEL_DO_NOT_USE_:;
+        }
+
+        BOOST_LOG_TRIVIAL(debug) << "reported max jobs " << std::to_string(jobsMax) << " for client " << clientIP;
         answer->set_maxjobs(jobsMax);
         return grpc::Status::OK;
     } catch (const std::exception &e) {
