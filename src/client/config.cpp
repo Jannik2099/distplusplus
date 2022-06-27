@@ -64,12 +64,12 @@ static std::vector<std::string> getServers(const toml::table &configFile) {
 }
 
 static distplusplus::CompressionType getCompressionType(const toml::table &configFile) {
-    const char *compressionEnv = getenv("DISTPLUSPLUS_COMPRESSION");
+    const char *compressionEnv = getenv("DISTPLUSPLUS_COMPRESS");
     std::string compressionString;
     if (compressionEnv != nullptr) {
         compressionString = compressionEnv;
     } else {
-        compressionString = configFile["compression"].value_or(DISTPLUSPLUS_DEFAULT_COMPRESSION_STR);
+        compressionString = configFile["compress"].value_or(DISTPLUSPLUS_DEFAULT_COMPRESSION_STR);
     }
     if (compressionString == "NONE") {
         return NONE;

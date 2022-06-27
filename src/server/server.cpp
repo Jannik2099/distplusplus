@@ -101,8 +101,7 @@ void Server::reservationReaper() {
     const std::stop_token token = reservationReaperThread.get_stop_token();
     while (!token.stop_requested()) {
         const reservationTypeB timestamp = std::chrono::system_clock::now();
-        // TODO: make configurable
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::seconds(reservationTimeout));
         {
             std::lock_guard lockGuard(reservationLock);
             const auto before = reservations.size();
@@ -144,7 +143,8 @@ grpc::Status Server::Query(grpc::ServerContext *context, const distplusplus::Ser
         } else {
             auto loadavg = gsl::narrow_cast<uint32_t>(loadarr[0] / gsl::narrow_cast<double>(jobsMax) * 100);
             loadavg = std::min(loadavg, 100U);
-            BOOST_LOG_TRIVIAL(debug) << "reported load average " << std::to_string(loadavg) << " for client" << clientIP;
+            BOOST_LOG_TRIVIAL(debug) << "reported load average " << std::to_string(loadavg) << " for client"
+                                     << clientIP;
             answer->set_currentload(loadavg);
         }
 
@@ -168,7 +168,8 @@ grpc::Status Server::Query(grpc::ServerContext *context, const distplusplus::Ser
         case CompressionType_INT_MIN_SENTINEL_DO_NOT_USE_:;
         }
 
-        BOOST_LOG_TRIVIAL(debug) << "reported max jobs " << std::to_string(jobsMax) << " for client " << clientIP;
+        BOOST_LOG_TRIVIAL(debug) << "reported max jobs " << std::to_string(jobsMax) << " for client "
+                                 << clientIP;
         answer->set_maxjobs(jobsMax);
         return grpc::Status::OK;
     } catch (const std::exception &e) {
@@ -310,8 +311,9 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
     }
 }
 
-Server::Server(std::uint64_t maxJobs, distplusplus::common::CompressorFactory compressorFactory)
-    : compressorFactory(compressorFactory), jobsMax(maxJobs) {
+Server::Server(std::uint64_t maxJobs, std::uint64_t reservationTimeout,
+               distplusplus::common::CompressorFactory compressorFactory)
+    : compressorFactory(compressorFactory), jobsMax(maxJobs), reservationTimeout(reservationTimeout) {
     distplusplus::common::assertAndRaise(maxJobs != 0, "tried to construct server with 0 max jobs");
 }
 
