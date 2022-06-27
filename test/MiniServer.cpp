@@ -82,7 +82,7 @@ public:
         argsVec.emplace_back(outputFile.c_str());
         argsVec.emplace_back(inputFile.c_str());
 
-        const char *compressionEnv = getenv("DISTPLUSPLUS_COMPRESSION");
+        const char *compressionEnv = getenv("DISTPLUSPLUS_COMPRESS");
         distplusplus::CompressionType compressionType = DISTPLUSPLUS_DEFAULT_COMPRESSION_FULL;
         if (compressionEnv != nullptr) {
             const std::string compressionString = compressionEnv;

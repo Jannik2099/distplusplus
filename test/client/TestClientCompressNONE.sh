@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function runTest() {
-    export DISTPLUSPLUS_COMPRESSION="NONE"
+    export DISTPLUSPLUS_COMPRESS="NONE"
     ${MINI_SERVER} &
     PID=$!
     sleep 1

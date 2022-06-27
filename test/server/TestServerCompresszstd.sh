@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function runTest() {
-    ${SERVER} --compression zstd &
+    ${SERVER} --compress zstd &
     PID=$!
     sleep 1
 

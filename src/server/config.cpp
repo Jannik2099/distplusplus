@@ -130,8 +130,7 @@ Config getConfig(std::span<char *> argv) {
     }
 
     const auto compressionType = [&varMap, &enabledCompressionAlgs] {
-        const auto userCompressionType =
-            getFromEnv<std::string>(varMap, "compress", "DISTPLUSPLUS_COMPRESS");
+        const auto userCompressionType = getFromEnv<std::string>(varMap, "compress", "DISTPLUSPLUS_COMPRESS");
         if (userCompressionType == "NONE") {
             return distplusplus::CompressionType::NONE;
         }

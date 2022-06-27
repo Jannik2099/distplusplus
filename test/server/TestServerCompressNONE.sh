@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function runTest() {
-    ${SERVER} --compression NONE &
+    ${SERVER} --compress NONE &
     PID=$!
     sleep 1
 
