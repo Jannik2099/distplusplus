@@ -55,8 +55,12 @@ if(USE_DEFAULT_FLAGS)
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         string(APPEND CMAKE_CXX_FLAGS_RELEASE " -flto=auto")
     endif()
-    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined")
+    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -fno-omit-frame-pointer")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g3 -fno-omit-frame-pointer")
+endif()
+
+if(SANITIZE)
+    string(APPEND CMAKE_CXX_FLAGS " -g3 -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined -fsanitize-ignorelist=${CMAKE_CURRENT_SOURCE_DIR}/sanitizer.supp")
 endif()
 
 pkg_search_module(lmdb REQUIRED IMPORTED_TARGET GLOBAL lmdb)

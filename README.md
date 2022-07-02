@@ -55,6 +55,7 @@ Distplusplus is written in C++20 and probably requires at least Clang 12 or gcc 
 | SYSTEM_LMDBXX     | whether to use system or bundled lmdb++               | ON            |
 | SYSTEM_GRPC       | whether to use system or bundled grpc and protobuf    | ON            |
 | COVERAGE          | build with coverage information & add coverage target | OFF           |
+| SANITIZE          | build with sanitizer (asan and ubsan) instrumentation | OFF           |
 | LLVM_PROFDATA     | path to llvm-profdata - needed for coverage           | llvm-profdata |
 | LLVM_COV          | path to llvm-cov - needed for coverage                | llvm-cov      |
 
@@ -90,4 +91,4 @@ Should you have come this far and still have the motivation to try distplusplus 
     - the compression algorithm and level are set via the `DISTPLUSPLUS_COMPRESS` and `DISTPLUSPLUS_COMPRESSION_LEVEL` environment, or the `compress` and `compression-level` config values in `/etc/distplusplus/distplusplus.toml`. Environment takes priority over config.
         - The config file syntax is not finalized yet.
 
-Should you encounter any issues, please rebuild with `-DCMAKE_BUILD_TYPE=Debug` (this enables some extra asserts plus sanitizers) and report anything you find. A stack trace or even coredump will also be tremendeously helpful
+Should you encounter any issues, please rebuild with `-DCMAKE_BUILD_TYPE=Debug` (this enables some extra asserts) and report anything you find. A stack trace or even coredump will also be tremendeously helpful
