@@ -53,7 +53,6 @@ static constexpr std::array singleArgsCPP [[maybe_unused]] = {
     "-MM",
     "-MMD",
     "-MP",
-    "-MQ",
     "-Mno-modules",
     "-no-integrated-cpp",
     "-P",
@@ -66,18 +65,14 @@ static constexpr std::array singleArgsCPP [[maybe_unused]] = {
 };
 
 static constexpr std::array multiArgsCPP [[maybe_unused]] = {
-    "-imacros", "-include", "-Xpreprocessor", "-MT", "-MF",
+    "-imacros", "-include", "-Xpreprocessor", "-MT",      "-MF",        "-MQ", "-I",
+    "-D",       "-U",       "-iquote",        "-isystem", "-idirafter",
 };
 
 static constexpr std::array singleArgsCPPStartsWith [[maybe_unused]] = {
     "-I",
     "-D",
     "-U",
-    "-fexec-charset=",
-    "-finput-charset=",
-    "-fmacro-prefix-map=",
-    "-ftabstop=",
-    "-fwide-exec-charset=",
     "-Wp,",
 };
 
@@ -98,12 +93,23 @@ static constexpr std::array singleArgsNoDistribute [[maybe_unused]] = {
     "--coverage",
     "-fprofile-arcs",
     "-ftest-coverage",
+    "-include-pch",
 };
 
-static constexpr std::array singleArgsNoDistributeStartsWith
-    [[maybe_unused]] = {"-fplugin=",     "-specs=",        "-ffile-prefix-map=",
-                        "-fprofile-use", "-fauto-profile", "-finstrument-functions-exclude",
-                        "-save-temps",   "-time",          "-fdump"};
+static constexpr std::array singleArgsNoDistributeStartsWith [[maybe_unused]] = {
+    "-fplugin=",
+    "-specs=",
+    "-ffile-prefix-map=",
+    "-fprofile-use",
+    "-fauto-profile",
+    "-finstrument-functions-exclude",
+    "-save-temps",
+    "-time",
+    "-fdump",
+    "-fdebug-prefix-map=",
+    "-fprofile-prefix-map=",
+    "-fmacro-prefix-map=",
+};
 
 static constexpr std::array inputFileExtensionC [[maybe_unused]] = {
     ".c",
