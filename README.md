@@ -25,10 +25,8 @@ I cannot give a detailed comparison as this perceived needless complexity always
 - Debug info handling:
     - the binary will probably work, but show garbage or missing file names in gdb
     - this also means builds are not reproduceable yet
-- Compression
 - Support for distributed LTO, PGO, and anything else that may emit or depend on additional files
 - Support for languages beyond C and C++, as feasible
-- A halfway intelligent client-side load balancing protocol
 - Logging and error reporting is rather rudimentary and inconsistent
 - Authentication via gRPC certs - only unauthenticated traffic right now
 - good documentation, man pages
@@ -78,11 +76,13 @@ Should you have come this far and still have the motivation to try distplusplus 
     - usage is identical to distcc: either prefix the compiler with distplusplus or call it directly via a symlink in `/usr/libexec/distplusplus`
     - the log level can be set via the environment variable `DISTPLUSPLUS_LOG_LEVEL`. Recognized levels are `trace, debug, info, warning, error, fatal`. The default log level is `warning`.
         - a lot of events are not properly logged yet - you may not get useful metrics or debugging assistance from this.
+        - some build systems (autotools) may be very picky with the stdout of compiler invocations. Reducing the log level to error may be required in some scenarios.
     - servers are configured in `/etc/distplusplus/distplusplus.toml` as `hostname:port` strings in the `[servers]` array. Example:
     ```
     [servers] = {
     "localhost:1234",
-    "127.0.0.1:4321"
+    "127.0.0.1:4321",
+    "unix:/run/distplusplus.sock"
     }
     ```
     - The string is directly parsed by gRPC. See [gRPC docs](https://grpc.github.io/grpc/cpp/md_doc_naming.html) for details.
@@ -92,3 +92,9 @@ Should you have come this far and still have the motivation to try distplusplus 
         - The config file syntax is not finalized yet.
 
 Should you encounter any issues, please rebuild with `-DCMAKE_BUILD_TYPE=Debug` (this enables some extra asserts) and report anything you find. A stack trace or even coredump will also be tremendeously helpful
+
+## Known bugs / deficiencies
+- encryption is not yet implemented. DO NOT USE ACROSS UNTRUSTED NETWORKS.
+- the load balancing doesn't work very well yet.
+- there may be a race condition in the client queryDB. I haven't been able to reproduce it.
+- the client throws in some cases where no internal error occured, but the invocation failed for other reasons.

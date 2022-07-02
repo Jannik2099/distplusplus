@@ -11,8 +11,6 @@
 - document protocol properly
     - ready protocol for multiple files (lto, pgo), perhaps other languages
 - more unit tests!!!
-- CLIENT: implement queries & query storage
-    - CLIENT: implement basic load balancing, requires queries
 - service files
 - integration patchset for portage
 
@@ -26,3 +24,4 @@
     - clang ThinLTO
     - gcc LTO - is this even feasible?
 - PGO support
+- migrate to meson
