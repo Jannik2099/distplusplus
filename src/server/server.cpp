@@ -143,7 +143,7 @@ grpc::Status Server::Query(grpc::ServerContext *context, const distplusplus::Ser
         } else {
             auto loadavg = gsl::narrow_cast<uint32_t>(loadarr[0] / gsl::narrow_cast<double>(jobsMax) * 100);
             loadavg = std::min(loadavg, 100U);
-            BOOST_LOG_TRIVIAL(debug) << "reported load average " << std::to_string(loadavg) << " for client"
+            BOOST_LOG_TRIVIAL(debug) << "reported load average " << std::to_string(loadavg) << " for client "
                                      << clientIP;
             answer->set_currentload(loadavg);
         }
@@ -200,6 +200,7 @@ grpc::Status Server::Reserve(grpc::ServerContext *context, const distplusplus::R
                 return grpc::Status::OK;
             }
         }
+        BOOST_LOG_TRIVIAL(debug) << "rejected reservation for client " << context->peer() << " as all slots are full";
         answer->set_success(false);
         return {grpc::StatusCode::RESOURCE_EXHAUSTED, "host is full", std::to_string(jobsCur)};
     } catch (const std::exception &e) {
