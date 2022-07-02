@@ -14,6 +14,7 @@ using namespace distplusplus::common;
 
 namespace distplusplus::server::parser {
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void Parser::parse(ArgsVecSpan args) {
     _args.reserve(args.size());
     bool canDistribute = false;
@@ -24,23 +25,18 @@ void Parser::parse(ArgsVecSpan args) {
                         [argView](const char *argComp) { return argView == argComp; })) {
             throw CannotProcessSignal("encountered non-distributable argument " + std::string(arg));
         }
+        if (std::any_of(unseq, multiArgsNoDistribute.begin(), multiArgsNoDistribute.end(),
+                        [argView](const char *argComp) { return argView == argComp; })) {
+            throw CannotProcessSignal("encountered non-distributable argument " + std::string(arg));
+        }
         if (std::any_of(unseq, singleArgsNoDistributeStartsWith.begin(),
                         singleArgsNoDistributeStartsWith.end(),
                         [argView](const char *argComp) { return argView.starts_with(argComp); })) {
             throw CannotProcessSignal("encountered non-distributable argument " + std::string(arg));
         }
-        if (std::any_of(unseq, multiArgsNoDistribute.begin(), multiArgsNoDistribute.end(),
-                        [argView](const char *argComp) { return argView == argComp; })) {
-            throw CannotProcessSignal("encountered non-distributable argument " + std::string(arg));
-        }
         // filter out cpp flags
         if (std::any_of(unseq, singleArgsCPP.begin(), singleArgsCPP.end(),
                         [argView](const char *argComp) { return argView == argComp; })) {
-            BOOST_LOG_TRIVIAL(trace) << "filtered preprocessor argument " << arg.c_str();
-            continue;
-        }
-        if (std::any_of(unseq, singleArgsCPPStartsWith.begin(), singleArgsCPPStartsWith.end(),
-                        [argView](const char *argComp) { return argView.starts_with(argComp); })) {
             BOOST_LOG_TRIVIAL(trace) << "filtered preprocessor argument " << arg.c_str();
             continue;
         }
@@ -53,6 +49,11 @@ void Parser::parse(ArgsVecSpan args) {
             BOOST_LOG_TRIVIAL(trace) << "filtered preprocessor argument " << args[i].c_str() << " "
                                      << args[i + 1].c_str();
             i++;
+            continue;
+        }
+        if (std::any_of(unseq, singleArgsCPPStartsWith.begin(), singleArgsCPPStartsWith.end(),
+                        [argView](const char *argComp) { return argView.starts_with(argComp); })) {
+            BOOST_LOG_TRIVIAL(trace) << "filtered preprocessor argument " << arg.c_str();
             continue;
         }
         if (argView == "-c") {
