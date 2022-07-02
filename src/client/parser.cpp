@@ -48,10 +48,19 @@ void Parser::checkInputFileCandidate(const Arg &file) {
 void Parser::readArgsFile(const path &argsFile) { // NOLINT(misc-no-recursion)
     std::ifstream fileStream(argsFile);
     ArgsVec fileArgs;
-    while (!fileStream.eof()) {
+    std::string line;
+    while (std::getline(fileStream, line)) {
+        if (line.empty()) {
+            continue;
+        }
+        std::stringstream lineStream(line);
         std::string arg;
-        std::getline(fileStream, arg, ' ');
-        fileArgs.push_back(arg);
+        while (std::getline(lineStream, arg, ' ')) {
+            if (arg.empty()) {
+                continue;
+            }
+            fileArgs.push_back(arg);
+        }
     }
     parseArgs(fileArgs);
 }
@@ -64,6 +73,12 @@ void Parser::parseArgs(ArgsVecSpan args) { // NOLINT(misc-no-recursion)
     for (std::size_t i = 0; i < args.size(); i++) {
         const Arg &arg = args[i];
         const std::string_view argView(arg);
+        if (argView.find(' ') != std::string_view::npos) {
+            BOOST_LOG_TRIVIAL(warning)
+                << "cannot distribute because arg " << arg.c_str()
+                << " contained spaces - this does not look like a valid compiler invocation";
+            throw FallbackSignal();
+        }
         if (std::any_of(unseq, singleArgsNoDistribute.begin(), singleArgsNoDistribute.end(),
                         [argView](const char *argComp) { return argView == argComp; })) {
             BOOST_LOG_TRIVIAL(info) << "cannot distribute because of arg " << arg.c_str();
@@ -97,6 +112,9 @@ void Parser::parseArgs(ArgsVecSpan args) { // NOLINT(misc-no-recursion)
             }
             i++;
             _outfile = std::filesystem::path(args[i]);
+        } else if (argView.starts_with("-o")) {
+            const std::string_view outView = argView.substr(2);
+            _outfile = std::filesystem::path(outView);
         } else if (argView == "-c" || argView == "-S") {
             _modeArg = arg;
             if (!_canDistribute.has_value()) {
