@@ -1,12 +1,19 @@
 #include "common.hpp"
 
+#include <boost/asio/buffer.hpp>
+#include <boost/asio/io_service.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
+#include <boost/process.hpp>
+#include <boost/process/async_pipe.hpp>
+#include <boost/process/pipe.hpp>
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
+#include <future>
 #include <gsl/gsl_util>
 #include <optional>
 #include <sstream>
@@ -66,7 +73,7 @@ ScopeGuard::~ScopeGuard() {
 }
 void ScopeGuard::defuse() { fuse = false; }
 
-ProcessHelper::ProcessHelper(const boost::filesystem::path &program, ArgsVecSpan args,
+ProcessHelper::ProcessHelper(const boost::filesystem::path &program, ArgsVecSpan args, const std::string &cin,
                              const boost::process::environment &env) {
     // a segfault in boost is really shitty to debug - assert sanity beforehand
     assertAndRaise(!program.empty(), "passed program is empty");
@@ -79,18 +86,32 @@ ProcessHelper::ProcessHelper(const boost::filesystem::path &program, ArgsVecSpan
     for (const ArgsVec::value_type &str : args) {
         rawArgs.emplace_back(str);
     }
-    process = boost::process::child(program, rawArgs, env, boost::process::std_out > stdoutPipe,
-                                    boost::process::std_err > stderrPipe);
+
+    boost::asio::io_service ios;
+    std::future<std::string> errfut;
+    std::future<std::string> outfut;
+    process = boost::process::child(
+        program, rawArgs, env,
+        boost::process::std_in<boost::asio::buffer(cin), boost::process::std_out> outfut,
+        boost::process::std_err > errfut, ios);
+    ios.run();
     process.wait();
     _returnCode = process.exit_code();
-    _stdout = std::string(std::istreambuf_iterator(stdoutPipe), {});
-    _stderr = std::string(std::istreambuf_iterator(stderrPipe), {});
-}
-
-//  clang-tidy does not properly evaluate into the called constructor
-// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-ProcessHelper::ProcessHelper(const boost::filesystem::path &program, ArgsVecSpan args) {
-    *this = ProcessHelper(program, args, boost::this_process::environment());
+    _stderr = errfut.get();
+    _stdout = outfut.get();
+    BOOST_LOG_TRIVIAL(trace) << "process invocation:\n"
+                             << "command: " << program << '\n'
+                             << "args: " <<
+        [&rawArgs]() {
+            std::string ret;
+            for (const auto &arg : rawArgs) {
+                ret += arg + ' ';
+            }
+            return ret;
+        }() << '\n'
+                             << "stdin: " << cin << '\n'
+                             << "stderr: " << _stderr << "stdout: " << _stdout
+                             << "exit code: " << std::to_string(_returnCode);
 }
 
 const int &ProcessHelper::returnCode() const { return _returnCode; }

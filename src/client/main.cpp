@@ -10,6 +10,8 @@
 
 #include <boost/log/trivial.hpp>
 #include <boost/process.hpp>
+#include <cstdio>
+#include <fcntl.h>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -31,6 +33,32 @@ using distplusplus::common::ArgsVecSpan;
 using distplusplus::common::BoundsSpan;
 using distplusplus::common::ProcessHelper;
 using distplusplus::common::Tempfile;
+
+// Whoever the fuck designed C / POSIX IO and thought "yeah this is good" should be tied for digital war
+// crimes and thrown in the Sarlacc pit
+static bool stdin_empty() {
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+    char buf[1];
+
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+    const int oldflags = fcntl(fileno(stdin), F_GETFL);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+    fcntl(fileno(stdin), F_SETFL, O_NONBLOCK);
+    const ssize_t num_read = read(fileno(stdin), &buf, 1);
+    const int err = errno;
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+    fcntl(fileno(stdin), F_SETFL, oldflags);
+
+    if (err == EAGAIN || err == EWOULDBLOCK) {
+        return true;
+    }
+
+    if (num_read == 0) {
+        return true;
+    }
+    ungetc(buf[0], stdin);
+    return false;
+}
 
 static int func(ArgsVecSpan argv) { // NOLINT(readability-function-cognitive-complexity)
     if (argv.size() == 1 && std::filesystem::path(argv[0]).stem() == "distplusplus") {
@@ -117,7 +145,10 @@ static int func(ArgsVecSpan argv) { // NOLINT(readability-function-cognitive-com
 
     const std::string &preprocessorStderr = Preprocessor.get_stderr();
     if (!preprocessorStderr.empty()) {
-        std::cerr << preprocessorStderr << std::endl;
+        std::cerr << preprocessorStderr;
+    }
+    if (Preprocessor.returnCode() != 0) {
+        return Preprocessor.returnCode();
     }
 
     Client client = ClientFactory(compilerName);
@@ -130,15 +161,17 @@ static int func(ArgsVecSpan argv) { // NOLINT(readability-function-cognitive-com
         outStream.close();
     }
     if (!answer.stderr().empty()) {
-        std::cout << answer.stderr() << std::endl;
+        std::cout << answer.stderr();
     }
     if (!answer.stdout().empty()) {
-        std::cout << answer.stdout() << std::endl;
+        std::cout << answer.stdout();
     }
+    BOOST_LOG_TRIVIAL(trace) << "remote invocation returned " << std::to_string(answer.returncode());
     return answer.returncode();
 }
 
-int main(int argc, char *argv[]) { // NOLINT(bugprone-exception-escape)
+// NOLINTNEXTLINE(bugprone-exception-escape, readability-function-cognitive-complexity)
+int main(int argc, char *argv[]) {
     distplusplus::common::initBoostLogging();
     ArgsVec argsVec;
     for (char *arg : BoundsSpan(argv, argc)) {
@@ -149,6 +182,10 @@ int main(int argc, char *argv[]) { // NOLINT(bugprone-exception-escape)
     // uncaught exceptions are not guaranteed to invoke destructors
     // hence catch and rethrow
     try {
+        if (!stdin_empty()) {
+            BOOST_LOG_TRIVIAL(info) << "cannot distribute because stdin is not empty";
+            throw FallbackSignal();
+        }
         ret = func(argsSpan);
     } catch (FallbackSignal) {
         if (!config.fallback()) {
@@ -177,10 +214,13 @@ int main(int argc, char *argv[]) { // NOLINT(bugprone-exception-escape)
             return -1;
         }
 
+        const auto cin = stdin_empty() ? "" : std::string(std::istreambuf_iterator<char>(std::cin), {});
         ArgsVecSpan compilerArgs(argsSpan.begin() + compilerPos + 1, argsSpan.end());
-        ProcessHelper localInvocation(compilerPath, compilerArgs);
-        std::cerr << localInvocation.get_stderr() << std::endl;
-        std::cout << localInvocation.get_stdout() << std::endl;
+        ProcessHelper localInvocation(compilerPath, compilerArgs, cin);
+        std::cerr << localInvocation.get_stderr();
+        std::cout << localInvocation.get_stdout();
+        BOOST_LOG_TRIVIAL(trace) << "local invocation returned "
+                                 << std::to_string(localInvocation.returnCode());
         return localInvocation.returnCode();
     }
     // TODO: this destroys the call stack. Perhaps find another solution to calling Tempfile destructors?

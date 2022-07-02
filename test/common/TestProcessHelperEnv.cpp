@@ -14,7 +14,7 @@ int main() {
     boost::process::environment env = boost::this_process::environment();
     env["MY_CONTROL_VAR"] = control;
     ArgsVec args{"-c", "echo -n ${MY_CONTROL_VAR}"};
-    ProcessHelper processHelper(boost::process::search_path("bash"), args, env);
+    ProcessHelper processHelper(boost::process::search_path("bash"), args, "", env);
     if (processHelper.returnCode() != 0) {
         std::cout << "process returned " << std::to_string(processHelper.returnCode()) << std::endl;
         return 1;

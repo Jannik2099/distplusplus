@@ -4,7 +4,8 @@
 #include "distplusplus.pb.h"
 
 #include <boost/filesystem.hpp>
-#include <boost/process.hpp>
+#include <boost/process/child.hpp>
+#include <boost/process/environment.hpp>
 #include <filesystem>
 #include <functional>
 #include <grpcpp/support/status_code_enum.h>
@@ -22,17 +23,19 @@ using std::filesystem::path;
 
 namespace distplusplus::common {
 
-[[maybe_unused]] static constexpr const char *compressionType_to_string(distplusplus::CompressionType compressionType) {
-    switch(compressionType) {
-        case NONE:
-            return "NONE";
-        case zstd:
-            return "zstd";
-            // NOLINTNEXTLINE(bugprone-branch-clone)
-        case CompressionType_INT_MAX_SENTINEL_DO_NOT_USE_:;
-        case CompressionType_INT_MIN_SENTINEL_DO_NOT_USE_:;
+[[maybe_unused]] static constexpr const char *
+compressionType_to_string(distplusplus::CompressionType compressionType) {
+    switch (compressionType) {
+    case NONE:
+        return "NONE";
+    case zstd:
+        return "zstd";
+        // NOLINTNEXTLINE(bugprone-branch-clone)
+    case CompressionType_INT_MAX_SENTINEL_DO_NOT_USE_:;
+    case CompressionType_INT_MIN_SENTINEL_DO_NOT_USE_:;
     }
-    throw std::runtime_error("encountered unexpected compression type value " + std::to_string(compressionType));
+    throw std::runtime_error("encountered unexpected compression type value " +
+                             std::to_string(compressionType));
 }
 
 [[maybe_unused]] static void assertAndRaise(bool condition, const std::string &msg) {
@@ -70,14 +73,11 @@ private:
     int _returnCode;
     std::string _stdout;
     std::string _stderr;
-    boost::process::ipstream stdoutPipe;
-    boost::process::ipstream stderrPipe;
     boost::process::child process;
 
 public:
-    ProcessHelper(const boost::filesystem::path &program, ArgsVecSpan args);
-    ProcessHelper(const boost::filesystem::path &program, ArgsVecSpan args,
-                  const boost::process::environment &env);
+    ProcessHelper(const boost::filesystem::path &program, ArgsVecSpan args, const std::string &cin = "",
+                  const boost::process::environment &env = boost::this_process::environment());
     [[nodiscard]] const int &returnCode() const;
     // stdout / stderr are macros of stdio.h, avoid potential issues
     [[nodiscard]] const std::string &get_stdout() const;
