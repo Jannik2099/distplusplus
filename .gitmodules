@@ -10,3 +10,6 @@
 [submodule "third_party/lmdbxx"]
 	path = third_party/lmdbxx
 	url = https://github.com/hoytech/lmdbxx.git
+[submodule "third_party/GSL"]
+	path = third_party/GSL
+	url = https://github.com/microsoft/GSL.git

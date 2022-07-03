@@ -38,7 +38,8 @@ Distplusplus requires gRPC and boost. Build via cmake:
 
 Distplusplus requires rather recent versions of Boost (at least 1.72 I think) and protobuf (3.15).
 Distplusplus requires the C++17 version of lmdb++ (hoytech/lmdbxx on github).
-If your distro does not provide these versions, you can use the bundled versions by downloading them with `git submodule update --recursive --init` and build with `-DSYSTEM_BOOST=FALSE -DSYSTEM_GRPC=FALSE -DSYSTEM_LMDBXX=FALSE` as required.
+Distplusplus requires the Microsoft GSL library (Microsoft/GSL on github).
+If your distro does not provide these versions, you can use the bundled versions by downloading them with `git submodule update --recursive --init` and build with `-DSYSTEM_BOOST=FALSE -DSYSTEM_GRPC=FALSE -DSYSTEM_LMDBXX=FALSE -DSYSTEM_GSL=FALSE` as required.
 Building with bundled versions is not frequently tested and was mostly added to build in CI - feedback welcome.
 
 Distplusplus is tested with both gcc and clang and should compile without any warnings (please report anything you find)
@@ -50,7 +51,8 @@ Distplusplus is written in C++20 and probably requires at least Clang 12 or gcc 
 |-------------------|-------------------------------------------------------|---------------|
 | USE_DEFAULT_FLAGS | use builtin flags over user provided ones             | ON            |
 | SYSTEM_BOOST      | whether to use system or bundled boost                | ON            |
-| SYSTEM_LMDBXX     | whether to use system or bundled lmdb++               | ON            |
+| SYSTEM_LMDBXX     | whether to use system or bundled lmdb++               | OFF           |
+| SYSTEM_GSL        | whether to use system or bundled GSL                  | OFF           |
 | SYSTEM_GRPC       | whether to use system or bundled grpc and protobuf    | ON            |
 | COVERAGE          | build with coverage information & add coverage target | OFF           |
 | SANITIZE          | build with sanitizer (asan and ubsan) instrumentation | OFF           |
