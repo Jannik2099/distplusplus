@@ -4,14 +4,52 @@
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <gsl/narrow>
 #include <stdexcept>
 #include <string>
 #include <system_error>
+#include <vector>
 
 namespace distplusplus::common {
+
+namespace {
+
+// something tells me this is a really bad approach
+// we do this because uncaught exceptions do not invoke destructors
+
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+std::vector<std::filesystem::path> tempfileVec;
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+std::terminate_handler prev;
+void tempfileCleaner() noexcept {
+    for (const std::filesystem::path &file : tempfileVec) {
+        BOOST_LOG_TRIVIAL(debug) << "deleting temporary file " << file;
+        std::error_code err;
+        const bool success = std::filesystem::remove(file, err);
+        if (!success) {
+            if (err.value() != ENOENT) {
+                BOOST_LOG_TRIVIAL(fatal) << "failed to delete temporary file " << file << " with error "
+                                         << std::to_string(err.value()) << " " << err.message();
+            }
+        }
+    }
+    prev();
+}
+
+class TempfileCleanerSetter {
+public:
+    TempfileCleanerSetter() {
+        prev = std::get_terminate();
+        std::set_terminate(tempfileCleaner);
+    }
+};
+
+const TempfileCleanerSetter tempfileCleanerSetter;
+
+} // namespace
 
 void Tempfile::createFileName(const path &path) {
     const std::string suffix = path.filename().string();
@@ -39,6 +77,8 @@ void Tempfile::createFileName(const path &path) {
         throw std::runtime_error(errorMessage);
     }
     this->assign(templateCString);
+    BOOST_LOG_TRIVIAL(debug) << "created temporary file " << *this;
+    tempfileVec.emplace_back(*this);
     free(templateCString); // NOLINT(cppcoreguidelines-no-malloc, cppcoreguidelines-owning-memory)
 }
 

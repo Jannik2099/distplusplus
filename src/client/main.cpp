@@ -225,9 +225,5 @@ int main(int argc, char *argv[]) {
                                  << std::to_string(localInvocation.returnCode());
         return localInvocation.returnCode();
     }
-    // TODO: this destroys the call stack. Perhaps find another solution to calling Tempfile destructors?
-    catch (...) {
-        throw;
-    }
     return ret;
 }
