@@ -257,7 +257,7 @@ void Client::QueryHelper::updateServer(lmdb::txn &wtxn, lmdb::dbi &dbi, const st
         ret += '\n' + server + "_name: " += server;
         ret += '\n' + server + "_age: " += std::to_string(mtime);
         ret += '\n' + server + "_compressionTypeSupported: " +=
-            std::to_string(queryAnswer.compressiontypesupported());
+            std::to_string(static_cast<int>(queryAnswer.compressiontypesupported()));
         ret += '\n' + server + "_currentLoad: " += std::to_string(std::min(queryAnswer.currentload(), 100U));
         ret += '\n' + server + "_maxJobs: " += std::to_string(queryAnswer.maxjobs());
         return ret;
