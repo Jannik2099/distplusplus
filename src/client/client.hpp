@@ -50,7 +50,7 @@ private:
     class QueryHelper;
     friend QueryHelper;
 
-    using ArgsVecSpan = distplusplus::common::ArgsVecSpan;
+    using ArgsSpan = distplusplus::common::ArgsSpan;
 
     // std::unique_ptr<CompilationServer::Stub> stub;
     std::string uuid;
@@ -89,7 +89,7 @@ private:
     friend Client ClientFactory(const std::string &compilerName);
 
 public:
-    CompileAnswer send(ArgsVecSpan args, const std::string &fileName, std::string_view fileContent,
+    CompileAnswer send(ArgsSpan args, const std::string &fileName, std::string_view fileContent,
                        const std::string &cwd);
 };
 

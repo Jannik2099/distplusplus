@@ -56,7 +56,7 @@ public:
 
 class ArgsVec final : public std::vector<Arg> {
 private:
-    using ArgsVecSpan = BoundsSpan<const ArgsVec::value_type>;
+    using ArgsSpan = BoundsSpan<const ArgsVec::value_type>;
     using Base = std::vector<Arg>;
 
 public:
@@ -77,9 +77,9 @@ public:
 
     template <class InputIt> ArgsVec(InputIt first, InputIt last) : Base(first, last) {}
 
-    operator ArgsVecSpan() const noexcept { return {cbegin(), cend()}; }
+    operator ArgsSpan() const noexcept { return {cbegin(), cend()}; }
 };
 
-using ArgsVecSpan = BoundsSpan<const ArgsVec::value_type>;
+using ArgsSpan = BoundsSpan<const ArgsVec::value_type>;
 
 } // namespace distplusplus::common

@@ -21,15 +21,15 @@ public:
 
 class Parser final {
 private:
-    using ArgsVecSpan = distplusplus::common::ArgsVecSpan;
+    using ArgsSpan = distplusplus::common::ArgsSpan;
     using ArgsVec = distplusplus::common::ArgsVec;
     using Arg = distplusplus::common::Arg;
 
     ArgsVec _args;
-    void parse(ArgsVecSpan args);
+    void parse(ArgsSpan args);
 
 public:
-    explicit Parser(ArgsVecSpan args);
+    explicit Parser(ArgsSpan args);
     [[nodiscard]] const ArgsVec &args() const;
 };
 

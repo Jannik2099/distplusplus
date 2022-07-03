@@ -301,7 +301,7 @@ grpc::Status Client::reserve(CompilationServer::Stub &stub) {
 }
 
 // NOLINTNEXTLINE
-CompileAnswer Client::send(ArgsVecSpan args, const std::string &fileName, std::string_view fileContent,
+CompileAnswer Client::send(ArgsSpan args, const std::string &fileName, std::string_view fileContent,
                            const std::string &cwd) {
 
     std::unique_ptr<CompilationServer::Stub> stub;

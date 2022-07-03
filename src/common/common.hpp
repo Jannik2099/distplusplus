@@ -76,7 +76,7 @@ private:
     boost::process::child process;
 
 public:
-    ProcessHelper(const boost::filesystem::path &program, ArgsVecSpan args, const std::string &cin = "",
+    ProcessHelper(const boost::filesystem::path &program, ArgsSpan args, const std::string &cin = "",
                   const boost::process::environment &env = boost::this_process::environment());
     [[nodiscard]] const int &returnCode() const;
     // stdout / stderr are macros of stdio.h, avoid potential issues

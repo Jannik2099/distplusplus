@@ -28,7 +28,7 @@ namespace distplusplus::client::parser {
 
 class Parser final {
 private:
-    using ArgsVecSpan = distplusplus::common::ArgsVecSpan;
+    using ArgsSpan = distplusplus::common::ArgsSpan;
     using ArgsVec = distplusplus::common::ArgsVec;
     using Arg = distplusplus::common::Arg;
 
@@ -43,10 +43,10 @@ private:
 
     void checkInputFileCandidate(const Arg &file);
     void readArgsFile(const path &argsFile);
-    void parseArgs(ArgsVecSpan args);
+    void parseArgs(ArgsSpan args);
 
 public:
-    explicit Parser(ArgsVecSpan args);
+    explicit Parser(ArgsSpan args);
     Parser(const Parser &) = delete;
     Parser(Parser &&) = delete;
     Parser operator=(const Parser &) = delete;

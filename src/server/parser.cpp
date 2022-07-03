@@ -15,7 +15,7 @@ using namespace distplusplus::common;
 namespace distplusplus::server::parser {
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-void Parser::parse(ArgsVecSpan args) {
+void Parser::parse(ArgsSpan args) {
     _args.reserve(args.size());
     bool canDistribute = false;
     for (std::size_t i = 0; i < args.size(); i++) {
@@ -66,7 +66,7 @@ void Parser::parse(ArgsVecSpan args) {
     }
 }
 
-Parser::Parser(ArgsVecSpan args) { parse(args); }
+Parser::Parser(ArgsSpan args) { parse(args); }
 
 const ArgsVec &Parser::args() const { return _args; }
 

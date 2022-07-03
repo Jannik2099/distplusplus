@@ -68,7 +68,7 @@ void Parser::readArgsFile(const path &argsFile) { // NOLINT(misc-no-recursion)
 // This function is genuine hell and I do not know how to make it better
 // every branch in the main loop MUST be elseif.
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-void Parser::parseArgs(ArgsVecSpan args) { // NOLINT(misc-no-recursion)
+void Parser::parseArgs(ArgsSpan args) { // NOLINT(misc-no-recursion)
     _args.reserve(args.size() + _args.size());
     for (std::size_t i = 0; i < args.size(); i++) {
         const Arg &arg = args[i];
@@ -166,7 +166,7 @@ void Parser::parseArgs(ArgsVecSpan args) { // NOLINT(misc-no-recursion)
     }
 }
 
-Parser::Parser(ArgsVecSpan args) {
+Parser::Parser(ArgsSpan args) {
     parseArgs(args);
     if (!_canDistribute.has_value()) {
         _canDistribute = false;

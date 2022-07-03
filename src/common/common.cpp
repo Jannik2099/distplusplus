@@ -73,7 +73,7 @@ ScopeGuard::~ScopeGuard() {
 }
 void ScopeGuard::defuse() { fuse = false; }
 
-ProcessHelper::ProcessHelper(const boost::filesystem::path &program, ArgsVecSpan args, const std::string &cin,
+ProcessHelper::ProcessHelper(const boost::filesystem::path &program, ArgsSpan args, const std::string &cin,
                              const boost::process::environment &env) {
     // a segfault in boost is really shitty to debug - assert sanity beforehand
     assertAndRaise(!program.empty(), "passed program is empty");

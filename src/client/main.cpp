@@ -28,8 +28,8 @@
 
 using namespace distplusplus::client;
 using distplusplus::common::Arg;
+using distplusplus::common::ArgsSpan;
 using distplusplus::common::ArgsVec;
-using distplusplus::common::ArgsVecSpan;
 using distplusplus::common::BoundsSpan;
 using distplusplus::common::ProcessHelper;
 using distplusplus::common::Tempfile;
@@ -60,7 +60,7 @@ static bool stdin_empty() {
     return false;
 }
 
-static int func(ArgsVecSpan argv) { // NOLINT(readability-function-cognitive-complexity)
+static int func(ArgsSpan argv) { // NOLINT(readability-function-cognitive-complexity)
     if (argv.size() == 1 && std::filesystem::path(argv[0]).stem() == "distplusplus") {
         BOOST_LOG_TRIVIAL(error) << "distplusplus invoked without any arguments";
         return -1;
@@ -76,7 +76,7 @@ static int func(ArgsVecSpan argv) { // NOLINT(readability-function-cognitive-com
                                    << " , attempting to proceed";
     }
 
-    ArgsVecSpan compilerArgs = argv.subspan(compilerPos + 1);
+    ArgsSpan compilerArgs = argv.subspan(compilerPos + 1);
     const parser::Parser &parser = [compilerArgs]() {
         try {
             return parser::Parser(compilerArgs);
@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
     for (char *arg : BoundsSpan(argv, argc)) {
         argsVec.emplace_back(Arg::fromExternal(arg));
     }
-    ArgsVecSpan argsSpan(argsVec);
+    ArgsSpan argsSpan(argsVec);
     int ret = 0;
     // uncaught exceptions are not guaranteed to invoke destructors
     // hence catch and rethrow
@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
         }
 
         const auto cin = stdin_empty() ? "" : std::string(std::istreambuf_iterator<char>(std::cin), {});
-        ArgsVecSpan compilerArgs(argsSpan.begin() + compilerPos + 1, argsSpan.end());
+        ArgsSpan compilerArgs(argsSpan.begin() + compilerPos + 1, argsSpan.end());
         ProcessHelper localInvocation(compilerPath, compilerArgs, cin);
         std::cerr << localInvocation.get_stderr();
         std::cout << localInvocation.get_stdout();
