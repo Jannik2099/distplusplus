@@ -3,11 +3,7 @@
 #include "argsvec.hpp"
 #include "distplusplus.pb.h"
 
-#include <boost/filesystem.hpp>
-#include <boost/process/child.hpp>
-#include <boost/process/environment.hpp>
 #include <filesystem>
-#include <functional>
 #include <grpcpp/support/status_code_enum.h>
 #include <memory>
 #include <optional>
@@ -18,8 +14,6 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-
-using std::filesystem::path;
 
 namespace distplusplus::common {
 
@@ -51,56 +45,6 @@ compressionType_to_string(distplusplus::CompressionType compressionType) {
 
 void initBoostLogging();
 void initBoostLogging(const std::string &level);
-
-class ScopeGuard {
-private:
-    bool fuse = true;
-    const std::function<void()> atexit;
-
-public:
-    ScopeGuard() = delete;
-    ScopeGuard(const ScopeGuard &) = delete;
-    ScopeGuard(ScopeGuard &&) = delete;
-    ScopeGuard operator=(const ScopeGuard &) = delete;
-    ScopeGuard operator=(ScopeGuard &&) = delete;
-    ScopeGuard(std::function<void()> atexit);
-    ~ScopeGuard();
-    void defuse();
-};
-
-class ProcessHelper final {
-private:
-    int _returnCode;
-    std::string _stdout;
-    std::string _stderr;
-    boost::process::child process;
-
-public:
-    ProcessHelper(const boost::filesystem::path &program, ArgsSpan args, const std::string &cin = "",
-                  const boost::process::environment &env = boost::this_process::environment());
-    [[nodiscard]] const int &returnCode() const;
-    // stdout / stderr are macros of stdio.h, avoid potential issues
-    [[nodiscard]] const std::string &get_stdout() const;
-    [[nodiscard]] const std::string &get_stderr() const;
-};
-
-class Tempfile final : public path {
-private:
-    bool cleanup = true;
-    void createFileName(const path &path);
-
-public:
-    explicit Tempfile(const path &name);
-    Tempfile(const path &name, std::string_view content);
-    Tempfile(const Tempfile &) = delete;
-    Tempfile(Tempfile &&) noexcept = default;
-    ~Tempfile();
-
-    Tempfile &operator=(const Tempfile &) = delete;
-    Tempfile &operator=(Tempfile &&) noexcept = default;
-
-    void disable_cleanup();
-};
 
 distplusplus::CompilerType mapCompiler(const std::string &compiler);
 

@@ -1,16 +1,17 @@
 #include "client/parser.hpp"
 #include "common/argsvec.hpp"
-#include "common/common.hpp"
+#include "common/tempfile.hpp"
 
 #include <iostream>
 
 using distplusplus::common::ArgsVec;
+using distplusplus::common::Tempfile;
 using namespace distplusplus::client::parser;
 
 int main() {
     ArgsVec argsVec;
-    distplusplus::common::Tempfile infile("test.c");
-    distplusplus::common::Tempfile outfile("test.o");
+    Tempfile infile("test.c");
+    Tempfile outfile("test.o");
     argsVec.emplace_back("cc");
     argsVec.push_back(infile.c_str());
     argsVec.emplace_back("-c");

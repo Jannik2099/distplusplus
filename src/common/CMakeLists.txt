@@ -3,6 +3,16 @@ add_library(distplusplus::common ALIAS common)
 target_link_libraries(common Boost::log Boost::filesystem)
 obj_propagate_targets(common)
 
+add_library(process_helper OBJECT "process_helper.cpp")
+add_library(distplusplus::common::process_helper ALIAS process_helper)
+target_link_libraries(process_helper Boost::log Boost::filesystem)
+obj_propagate_targets(process_helper)
+
+add_library(tempfile OBJECT "tempfile.cpp")
+add_library(distplusplus::common::tempfile ALIAS tempfile)
+target_link_libraries(tempfile Boost::log)
+obj_propagate_targets(tempfile)
+
 add_library(compression_helper OBJECT "compression_helper.cpp")
 add_library(distplusplus::common::compression_helper ALIAS compression_helper)
 target_link_libraries(compression_helper distplusplus::protobuf Boost::log Boost::iostreams)

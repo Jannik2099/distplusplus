@@ -4,22 +4,23 @@
 #include "config.hpp"
 #include "fallback.hpp"
 
+#include <boost/log/trivial.hpp>
+#include <chrono>
+#include <climits>
+#include <fcntl.h>
+#include <grpc/grpc.h>
 #include <grpcpp/client_context.h>
+#include <grpcpp/create_channel.h>
+#include <grpcpp/support/status_code_enum.h>
+#include <lmdb++.h>
 #include <memory>
 #include <string>
+#include <thread>
+#include <utility>
 
 #ifndef NDEBUG
 #include <unordered_set>
 #endif
-#include <boost/log/trivial.hpp>
-#include <chrono>
-#include <climits>
-#include <grpc/grpc.h>
-#include <grpcpp/create_channel.h>
-#include <grpcpp/support/status_code_enum.h>
-#include <lmdb++.h>
-#include <thread>
-#include <utility>
 
 #define XSTRINGIFY(s) STRINGIFY(s) // NOLINT
 #define STRINGIFY(s) #s            // NOLINT

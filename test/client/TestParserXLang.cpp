@@ -3,12 +3,13 @@
 #undef TESTING_PRIVATE
 
 #include "common/argsvec.hpp"
-#include "common/common.hpp"
 #include "common/constants.hpp"
+#include "common/tempfile.hpp"
 
 #include <iostream>
 
 using distplusplus::common::ArgsVec;
+using distplusplus::common::Tempfile;
 using namespace distplusplus::client::parser;
 
 int main() {
@@ -16,8 +17,8 @@ int main() {
 
     for (const char *lang : distplusplus::common::xArgsC) {
         ArgsVec argsVec;
-        distplusplus::common::Tempfile infile("test.c");
-        distplusplus::common::Tempfile outfile("test.o");
+        Tempfile infile("test.c");
+        Tempfile outfile("test.o");
         argsVec.emplace_back("cc");
         argsVec.emplace_back("-x");
         argsVec.push_back(lang);
@@ -35,8 +36,8 @@ int main() {
 
     for (const char *lang : distplusplus::common::xArgsCXX) {
         ArgsVec argsVec;
-        distplusplus::common::Tempfile infile("test.c");
-        distplusplus::common::Tempfile outfile("test.o");
+        Tempfile infile("test.c");
+        Tempfile outfile("test.o");
         argsVec.emplace_back("cc");
         argsVec.emplace_back("-x");
         argsVec.push_back(lang);
@@ -54,8 +55,8 @@ int main() {
 
     {
         ArgsVec argsVec;
-        distplusplus::common::Tempfile infile("test.c");
-        distplusplus::common::Tempfile outfile("test.o");
+        Tempfile infile("test.c");
+        Tempfile outfile("test.o");
         argsVec.emplace_back("cc");
         argsVec.push_back(infile.c_str());
         argsVec.emplace_back("-c");
@@ -73,8 +74,8 @@ int main() {
     bool caught = false;
     try {
         ArgsVec argsVec;
-        distplusplus::common::Tempfile infile("test.c");
-        distplusplus::common::Tempfile outfile("test.o");
+        Tempfile infile("test.c");
+        Tempfile outfile("test.o");
         argsVec.emplace_back("cc");
         argsVec.push_back(infile.c_str());
         argsVec.emplace_back("-c");

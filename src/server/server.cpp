@@ -1,6 +1,10 @@
 #include "server.hpp"
 
 #include "common/argsvec.hpp"
+#include "common/common.hpp"
+#include "common/process_helper.hpp"
+#include "common/scopeguard.hpp"
+#include "common/tempfile.hpp"
 #include "parser.hpp"
 
 #include <algorithm>
@@ -200,7 +204,8 @@ grpc::Status Server::Reserve(grpc::ServerContext *context, const distplusplus::R
                 return grpc::Status::OK;
             }
         }
-        BOOST_LOG_TRIVIAL(debug) << "rejected reservation for client " << context->peer() << " as all slots are full";
+        BOOST_LOG_TRIVIAL(debug) << "rejected reservation for client " << context->peer()
+                                 << " as all slots are full";
         answer->set_success(false);
         return {grpc::StatusCode::RESOURCE_EXHAUSTED, "host is full", std::to_string(jobsCur)};
     } catch (const std::exception &e) {

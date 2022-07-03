@@ -6,7 +6,6 @@
 #endif
 
 #include "common/argsvec.hpp"
-#include "common/common.hpp"
 #include "common/constants.hpp"
 
 #include <exception>

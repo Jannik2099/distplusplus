@@ -2,20 +2,21 @@
 #include "client/parser.hpp"
 #undef TESTING_PRIVATE
 #include "common/argsvec.hpp"
-#include "common/common.hpp"
 #include "common/constants.hpp"
+#include "common/tempfile.hpp"
 
 #include <iostream>
 
 using distplusplus::common::ArgsVec;
+using distplusplus::common::Tempfile;
 using namespace distplusplus::client::parser;
 
 int main() {
     bool success = true;
     for (const char *extension : distplusplus::common::inputFileExtensionC) {
         ArgsVec argsVec;
-        distplusplus::common::Tempfile infile("test" + std::string(extension));
-        distplusplus::common::Tempfile outfile("test.o");
+        Tempfile infile("test" + std::string(extension));
+        Tempfile outfile("test.o");
         argsVec.emplace_back("cc");
         argsVec.push_back(infile.c_str());
         argsVec.emplace_back("-c");

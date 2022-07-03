@@ -1,5 +1,5 @@
 #include "common/argsvec.hpp"
-#include "common/common.hpp"
+#include "common/process_helper.hpp"
 #include "util.hpp"
 
 #include <boost/process.hpp>

@@ -2,6 +2,8 @@
 #include "common/argsvec.hpp"
 #include "common/common.hpp"
 #include "common/compression_helper.hpp"
+#include "common/process_helper.hpp"
+#include "common/tempfile.hpp"
 #include "config.hpp"
 #include "distplusplus.grpc.pb.h"
 #include "distplusplus.pb.h"

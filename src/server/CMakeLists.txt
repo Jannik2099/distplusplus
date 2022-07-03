@@ -13,7 +13,7 @@ obj_propagate_targets(parser-server)
 
 add_library(server OBJECT "server.cpp")
 add_library(distplusplus::server::server ALIAS server)
-target_link_libraries(server Boost::log distplusplus::common distplusplus::common::compression_helper distplusplus::protobuf distplusplus::grpc distplusplus::server::parser)
+target_link_libraries(server Boost::log distplusplus::common distplusplus::common::compression_helper distplusplus::common::process_helper distplusplus::common::tempfile distplusplus::protobuf distplusplus::grpc distplusplus::server::parser)
 obj_propagate_targets(server)
 
 
