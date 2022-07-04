@@ -343,11 +343,10 @@ CompileAnswer Client::send(ArgsSpan args, const std::string &fileName, std::stri
                 << "host " << server.server << " replied with grpc error "
                 << common::mapGRPCStatus(statusCode) << " to reservation, attempting next host";
         }
-        // TODO: custom exception types?
         if (allDown) {
             const std::string err_msg("all specified hosts were unreachable");
             BOOST_LOG_TRIVIAL(error) << err_msg;
-            throw std::runtime_error(err_msg);
+            throw FallbackSignal();
         }
         if (foundServer) {
             break;
@@ -356,10 +355,9 @@ CompileAnswer Client::send(ArgsSpan args, const std::string &fileName, std::stri
         if (std::chrono::system_clock::now() - timeBeforeReservation >=
             std::chrono::seconds(config.reservationAttemptTimeout())) {
             const std::string err_msg("could not find a vacant host after " +
-                                      std::to_string(config.reservationAttemptTimeout()) +
-                                      " seconds, aborting");
+                                      std::to_string(config.reservationAttemptTimeout()) + " seconds");
             BOOST_LOG_TRIVIAL(error) << err_msg;
-            throw std::runtime_error(err_msg);
+            throw FallbackSignal();
         }
     }
 
