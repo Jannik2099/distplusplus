@@ -2,8 +2,8 @@
 #include "common/constants.hpp"
 #include "server/parser.hpp"
 
+#include <algorithm>
 #include <iostream>
-#include <ranges>
 #include <string>
 #include <string_view>
 

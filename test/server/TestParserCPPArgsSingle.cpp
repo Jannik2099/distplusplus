@@ -15,16 +15,15 @@ int main() {
     ArgsVec argsVec;
     argsVec.emplace_back("-c");
     for (const auto &arg : singleArgsCPP) {
-        if (std::find(singleArgsNoDistribute.begin(), singleArgsNoDistribute.end(), arg) !=
-            singleArgsNoDistribute.end()) {
+        if (std::ranges::find(singleArgsNoDistribute, arg) != singleArgsNoDistribute.end()) {
             continue;
         }
         argsVec.emplace_back(arg);
     }
     Parser parser(argsVec);
     for (const auto &argParsed : parser.args()) {
-        if (std::any_of(singleArgsCPP.begin(), singleArgsCPP.end(),
-                        [&](const char *argComp) { return std::string_view(argParsed) == argComp; })) {
+        if (std::ranges::any_of(
+                singleArgsCPP, [&](const char *argComp) { return std::string_view(argParsed) == argComp; })) {
             std::cout << "preprocessor argument " << std::string_view(argParsed) << " was not filtered"
                       << std::endl;
             return 1;

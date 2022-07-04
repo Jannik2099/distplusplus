@@ -254,7 +254,7 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
 
         // the client could be a path to an unix socket too
         std::string clientIPDelimited = clientIP;
-        std::replace(clientIPDelimited.begin(), clientIPDelimited.end(), '/', '-');
+        std::ranges::replace(clientIPDelimited, '/', '-');
 
         // C++ is a pretty language
         const distplusplus::common::Decompressor decompressor = [&] {

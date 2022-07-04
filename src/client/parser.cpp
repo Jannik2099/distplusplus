@@ -6,46 +6,42 @@
 #include <algorithm>
 #include <boost/log/trivial.hpp>
 #include <cstdlib>
-#include <execution>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
-using std::execution::unseq;
 using namespace distplusplus::common;
 
 namespace distplusplus::client::parser {
 
 void Parser::checkInputFileCandidate(const Arg &file) {
-    const path filePath(file);
-    const path extension = filePath.extension();
-    if (std::find(inputFileExtension.begin(), inputFileExtension.end(), extension) !=
-        inputFileExtension.end()) {
+    const std::filesystem::path filePath(file);
+    const std::filesystem::path extension = filePath.extension();
+    if (std::ranges::find(inputFileExtension, extension) != inputFileExtension.end()) {
         if (!_infile.empty()) {
             throw ParserError("multiple input files parsed: " + _infile.string() + " & " + std::string(file));
         }
         // language can be overridden with -x
         if (_language == Language::NONE) {
-            if (std::find(inputFileExtensionC.begin(), inputFileExtensionC.end(), extension) !=
-                inputFileExtensionC.end()) {
+            if (std::ranges::find(inputFileExtensionC, extension) != inputFileExtensionC.end()) {
                 BOOST_LOG_TRIVIAL(trace) << "detected language as C from file extension ." << extension;
                 _language = Language::C;
-            } else if (std::find(inputFileExtensionCXX.begin(), inputFileExtensionCXX.end(), extension) !=
-                       inputFileExtensionCXX.end()) {
+            } else if (std::ranges::find(inputFileExtensionCXX, extension) != inputFileExtensionCXX.end()) {
                 BOOST_LOG_TRIVIAL(trace) << "detected language as C++ from file extension ." << extension;
                 _language = Language::CXX;
             }
         }
-        _infile = path(file);
+        _infile = std::filesystem::path(file);
     } else {
         _args.push_back(file);
     }
 }
 
-void Parser::readArgsFile(const path &argsFile) { // NOLINT(misc-no-recursion)
+void Parser::readArgsFile(const std::filesystem::path &argsFile) { // NOLINT(misc-no-recursion)
     std::ifstream fileStream(argsFile);
     ArgsVec fileArgs;
     std::string line;
@@ -79,25 +75,24 @@ void Parser::parseArgs(ArgsSpan args) { // NOLINT(misc-no-recursion)
                 << " contained spaces - this does not look like a valid compiler invocation";
             throw FallbackSignal();
         }
-        if (std::any_of(unseq, singleArgsNoDistribute.begin(), singleArgsNoDistribute.end(),
-                        [argView](const char *argComp) { return argView == argComp; })) {
+        if (std::ranges::any_of(singleArgsNoDistribute,
+                                [argView](const char *argComp) { return argView == argComp; })) {
             BOOST_LOG_TRIVIAL(info) << "cannot distribute because of arg " << arg.c_str();
             throw FallbackSignal();
         }
-        if (std::any_of(unseq, singleArgsNoDistributeStartsWith.begin(),
-                        singleArgsNoDistributeStartsWith.end(),
-                        [argView](const char *argComp) { return argView.starts_with(argComp); })) {
+        if (std::ranges::any_of(singleArgsNoDistributeStartsWith,
+                                [argView](const char *argComp) { return argView.starts_with(argComp); })) {
             BOOST_LOG_TRIVIAL(info) << "cannot distribute because of arg " << arg.c_str();
             throw FallbackSignal();
         }
-        if (std::any_of(unseq, multiArgsNoDistribute.begin(), multiArgsNoDistribute.end(),
-                        [argView](const char *argComp) { return argView == argComp; })) {
+        if (std::ranges::any_of(multiArgsNoDistribute,
+                                [argView](const char *argComp) { return argView == argComp; })) {
             BOOST_LOG_TRIVIAL(info) << "cannot distribute because of arg " << arg.c_str();
             throw FallbackSignal();
         }
         // we assume files do not start with -
         if (argView.starts_with("@")) {
-            const path argsFile = argView.substr(1);
+            const std::filesystem::path argsFile = argView.substr(1);
             if (!std::filesystem::is_regular_file(argsFile)) {
                 throw ParserError("argument file: " + std::string(arg) + " doesn't seem to exist");
             }
@@ -128,10 +123,9 @@ void Parser::parseArgs(ArgsSpan args) { // NOLINT(misc-no-recursion)
             _args.push_back(args[i]);
             i++;
             _args.push_back(args[i]);
-            if (std::find(xArgsC.begin(), xArgsC.end(), std::string_view(args[i])) != xArgsC.end()) {
+            if (std::ranges::find(xArgsC, std::string_view(args[i])) != xArgsC.end()) {
                 _language = Language::C;
-            } else if (std::find(xArgsCXX.begin(), xArgsCXX.end(), std::string_view(args[i])) !=
-                       xArgsCXX.end()) {
+            } else if (std::ranges::find(xArgsCXX, std::string_view(args[i])) != xArgsCXX.end()) {
                 _language = Language::CXX;
             } else {
                 BOOST_LOG_TRIVIAL(warning) << "uncategorized -x option: \"-x " << std::string_view(args[i])
@@ -150,8 +144,7 @@ void Parser::parseArgs(ArgsSpan args) { // NOLINT(misc-no-recursion)
             const std::string::size_type pos = argView.find('=');
             _target = Arg(argView.substr(pos + 1));
             _args.push_back(arg);
-        } else if (std::find(multiArgsCPP.begin(), multiArgsCPP.end(), std::string_view(arg)) !=
-                   multiArgsCPP.end()) {
+        } else if (std::ranges::find(multiArgsCPP, std::string_view(arg)) != multiArgsCPP.end()) {
             if (i + 1 == args.size()) {
                 throw ParserError("multi argument " + std::string(arg) + " is the last argument");
             }

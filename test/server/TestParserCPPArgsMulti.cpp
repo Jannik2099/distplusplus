@@ -20,8 +20,8 @@ int main() {
     }
     Parser parser(argsVec);
     for (const Arg &argParsed : parser.args()) {
-        if (std::any_of(multiArgsCPP.begin(), multiArgsCPP.end(),
-                        [&](const char *argComp) { return std::string_view(argParsed) == argComp; })) {
+        if (std::ranges::any_of(
+                multiArgsCPP, [&](const char *argComp) { return std::string_view(argParsed) == argComp; })) {
             std::cout << "preprocessor argument " << std::string_view(argParsed) << " was not filtered"
                       << std::endl;
             return 1;

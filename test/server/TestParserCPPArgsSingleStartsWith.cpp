@@ -18,9 +18,9 @@ int main() {
     }
     Parser parser(argsVec);
     for (const auto &argParsed : parser.args()) {
-        if (std::any_of(
-                singleArgsCPPStartsWith.begin(), singleArgsCPPStartsWith.end(),
-                [&](const char *argComp) { return std::string_view(argParsed).starts_with(argComp); })) {
+        if (std::ranges::any_of(singleArgsCPPStartsWith, [&](const char *argComp) {
+                return std::string_view(argParsed).starts_with(argComp);
+            })) {
             std::cout << "preprocessor argument " << std::string_view(argParsed) << " was not filtered"
                       << std::endl;
             return 1;

@@ -21,5 +21,5 @@ runs:
       shell: bash
     - run: sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-14 main"
       shell: bash
-    - run: sudo apt-get install -y clang-14 clang-tidy-14 lld-14 cmake ninja-build autoconf automake libtool make libmsgsl-dev libtbb2 libtbb-dev libzstd1 libzstd-dev ccache liblmdb-dev liblmdb0 libboost-all-dev
+    - run: sudo apt-get install -y clang-14 clang-tidy-14 lld-14 cmake ninja-build autoconf automake libtool make libmsgsl-dev libzstd1 libzstd-dev ccache liblmdb-dev liblmdb0 libboost-all-dev
       shell: bash

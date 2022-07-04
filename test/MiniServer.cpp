@@ -6,6 +6,7 @@
 #include "distplusplus.grpc.pb.h"
 #include "distplusplus.pb.h"
 
+#include <algorithm>
 #include <boost/process.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -61,7 +62,7 @@ public:
     grpc::Status Distribute(grpc::ServerContext * /*context*/, const distplusplus::CompileRequest *request,
                             distplusplus::CompileAnswer *answer) final {
         const std::string &uuid = request->uuid();
-        const auto iter = std::find(uuidList.begin(), uuidList.end(), uuid);
+        const auto iter = std::ranges::find(uuidList, uuid);
         if (iter != uuidList.end()) {
             return {grpc::StatusCode::FAILED_PRECONDITION, "uuid " + uuid + " not in reservation list"};
         }

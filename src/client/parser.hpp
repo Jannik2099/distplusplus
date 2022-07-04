@@ -10,18 +10,12 @@
 
 #include <exception>
 #include <filesystem>
-#include <iterator>
 #include <optional>
 #include <string>
-#include <string_view>
-#include <vector>
 
 #ifdef TESTING_PRIVATE_DISTPLUSPLUS_CLIENT_PARSER
 #define private public
 #endif
-
-using distplusplus::common::Language;
-using std::filesystem::path;
 
 namespace distplusplus::client::parser {
 
@@ -33,15 +27,15 @@ private:
 
     ArgsVec _args;
     Arg _modeArg;
-    path _infile;
-    path _outfile;
+    std::filesystem::path _infile;
+    std::filesystem::path _outfile;
     std::string _compiler;
     std::optional<Arg> _target;
     std::optional<bool> _canDistribute;
-    Language _language = Language::NONE;
+    distplusplus::common::Language _language = distplusplus::common::Language::NONE;
 
     void checkInputFileCandidate(const Arg &file);
-    void readArgsFile(const path &argsFile);
+    void readArgsFile(const std::filesystem::path &argsFile);
     void parseArgs(ArgsSpan args);
 
 public:
@@ -51,8 +45,8 @@ public:
     Parser operator=(const Parser &) = delete;
     Parser operator=(Parser &&) = delete;
     ~Parser() = default;
-    [[nodiscard]] const path &infile() const;
-    [[nodiscard]] const path &outfile() const;
+    [[nodiscard]] const std::filesystem::path &infile() const;
+    [[nodiscard]] const std::filesystem::path &outfile() const;
     [[nodiscard]] std::optional<Arg> target() const;
     [[nodiscard]] const ArgsVec &args() const;
     [[nodiscard]] const Arg &modeArg() const;
