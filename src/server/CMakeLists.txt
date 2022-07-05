@@ -8,7 +8,7 @@ obj_propagate_targets(config-server)
 
 add_library(parser-server OBJECT "parser.cpp")
 add_library(distplusplus::server::parser ALIAS parser-server)
-target_link_libraries(parser-server Boost::log -ltbb)
+target_link_libraries(parser-server Boost::log)
 obj_propagate_targets(parser-server)
 
 add_library(server OBJECT "server.cpp")
