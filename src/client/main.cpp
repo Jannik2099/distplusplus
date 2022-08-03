@@ -125,25 +125,17 @@ static int func(ArgsSpan argv) { // NOLINT(readability-function-cognitive-comple
 
     const std::filesystem::path &cppInfile = parser.infile();
     const std::string fileName = cppInfile.filename();
-    const Tempfile cppOutfile(std::string(parser.infile().stem()) + ".i");
 
     args.emplace_back(cppInfile.c_str());
-    args.emplace_back("-o");
-    args.emplace_back(cppOutfile.c_str());
     args.emplace_back("-E");
     ProcessHelper Preprocessor(boost::process::search_path(compilerName), args);
     args.pop_back();
     args.pop_back();
-    args.pop_back();
-    args.pop_back();
     args.emplace_back(parser.modeArg());
 
-    std::ifstream cppOutfileStream(cppOutfile);
-    std::string cppOutfileContent((std::istreambuf_iterator<char>(cppOutfileStream)),
-                                  std::istreambuf_iterator<char>());
     // TODO: could stream directly into compressor
     const distplusplus::common::Compressor compressor(config.compressionType(), config.compressionLevel(),
-                                                      cppOutfileContent);
+                                                      Preprocessor.get_stdout());
 
     const std::string &preprocessorStderr = Preprocessor.get_stderr();
     if (!preprocessorStderr.empty()) {
