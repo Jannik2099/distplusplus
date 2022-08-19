@@ -3,7 +3,6 @@
 #include "common/common.hpp"
 #include "common/compression_helper.hpp"
 #include "common/process_helper.hpp"
-#include "common/tempfile.hpp"
 #include "config.hpp"
 #include "distplusplus.grpc.pb.h"
 #include "distplusplus.pb.h"
@@ -34,7 +33,6 @@ using distplusplus::common::ArgsSpan;
 using distplusplus::common::ArgsVec;
 using distplusplus::common::BoundsSpan;
 using distplusplus::common::ProcessHelper;
-using distplusplus::common::Tempfile;
 
 // Whoever the fuck designed C / POSIX IO and thought "yeah this is good" should be tied for digital war
 // crimes and thrown in the Sarlacc pit
@@ -173,8 +171,6 @@ int main(int argc, char *argv[]) {
     }
     ArgsSpan argsSpan(argsVec);
     int ret = 0;
-    // uncaught exceptions are not guaranteed to invoke destructors
-    // hence catch and rethrow
     try {
         if (!stdin_empty()) {
             BOOST_LOG_TRIVIAL(info) << "cannot distribute because stdin is not empty";
