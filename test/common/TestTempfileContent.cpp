@@ -12,7 +12,7 @@ using namespace distplusplus::common;
 int main() {
     const std::string control = randomString();
     const std::string content = randomString();
-    Tempfile tempfile(control, content);
+    Tempfile tempfile(control, "", content);
 
     std::ifstream fileStream(tempfile);
     std::stringstream stringStream;

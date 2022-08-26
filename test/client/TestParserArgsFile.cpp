@@ -13,7 +13,7 @@ int main() {
     Tempfile infile("test.c");
     Tempfile outfile("test.o");
     std::string args = std::string(infile) + " -c -o " + std::string(outfile);
-    Tempfile argsfile("argsfile", args);
+    Tempfile argsfile("argsfile", "", args);
     argsVec.emplace_back("cc");
     argsVec.push_back("@" + std::string(argsfile));
     Parser parser(argsVec);

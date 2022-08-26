@@ -268,11 +268,11 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
             }
         }();
 
-        const distplusplus::common::Tempfile inputFile(clientIPDelimited + "." + request->inputfile().name(),
+        const distplusplus::common::Tempfile inputFile(request->inputfile().name(), clientIPDelimited,
                                                        decompressor.data());
 
-        const distplusplus::common::Tempfile outputFile(clientIPDelimited + "." +
-                                                        request->inputfile().name() + ".o");
+        const distplusplus::common::Tempfile outputFile(request->inputfile().name() + ".o",
+                                                        clientIPDelimited);
 
         ArgsVec preArgs(request->argument().begin(), request->argument().end());
         ArgsVec args;

@@ -5,14 +5,16 @@
 
 namespace distplusplus::common {
 
+void setTempDir(const std::filesystem::path &path);
+
 class Tempfile final : public std::filesystem::path {
 private:
     bool cleanup = true;
-    void createFileName(const std::filesystem::path &path);
+    void createFileName(const std::filesystem::path &name, const std::filesystem::path &dirname);
 
 public:
-    explicit Tempfile(const std::filesystem::path &name);
-    Tempfile(const std::filesystem::path &name, std::string_view content);
+    Tempfile(const std::filesystem::path &name, const std::filesystem::path &dirname = "",
+             std::string_view content = "");
     Tempfile(const Tempfile &) = delete;
     Tempfile(Tempfile &&) noexcept = default;
     ~Tempfile();

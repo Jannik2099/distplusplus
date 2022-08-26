@@ -76,7 +76,7 @@ public:
 
         const distplusplus::common::Decompressor decompressor(request->inputfile().compressiontype(),
                                                               request->inputfile().content());
-        distplusplus::common::Tempfile inputFile(request->inputfile().name(), decompressor.data());
+        distplusplus::common::Tempfile inputFile(request->inputfile().name(), "", decompressor.data());
         distplusplus::common::Tempfile outputFile(
             std::string(std::filesystem::path(request->inputfile().name()).stem()) + std::string(".o"));
 

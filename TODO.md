@@ -1,7 +1,7 @@
 ### basic functionality:
 
 - SERVER: debug info handling
-    - filename: important!
+    - filename: is already preserved, I think?
     - cwd: not so important (distcc doesn't), could be done via namespaces
 
 ### required for 1.0.0:
