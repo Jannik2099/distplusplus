@@ -12,10 +12,9 @@ static constexpr std::array soundsLikeYes = {"1", "YES", "yes", "ON", "on"};
 
 static std::filesystem::path getStateDir() {
     std::filesystem::path ret;
-    char *var = nullptr;
-    if ((var = getenv("DISTPLUSPLUS_STATE_DIR")), var != nullptr) {
+    if (char *var = getenv("DISTPLUSPLUS_STATE_DIR"); var != nullptr) {
         ret = var;
-    } else if ((var = getenv("HOME")), var != nullptr) {
+    } else if (var = getenv("HOME"); var != nullptr) {
         ret = std::string(var) + std::string("/.local/state/distplusplus");
     } else {
         const std::string err_msg("could not figure out state directory");
@@ -28,8 +27,7 @@ static std::filesystem::path getStateDir() {
 
 static toml::table getConfigFile() {
     std::filesystem::path ret;
-    char *var = nullptr;
-    if ((var = getenv("DISTPLUSPLUS_CONFIG_FILE")), var != nullptr) {
+    if (char *var = getenv("DISTPLUSPLUS_CONFIG_FILE"); var != nullptr) {
         ret = var;
     } else {
         ret = "/etc/distplusplus/distplusplus.toml";
@@ -45,14 +43,13 @@ static toml::table getConfigFile() {
 static std::vector<std::string> getServers(const toml::table &configFile) {
     std::vector<std::string> ret;
 
-    const char *listenAddrEnv = getenv("DISTPLUSPLUS_LISTEN_ADDRESS");
-    if (listenAddrEnv != nullptr) {
+    if (const char *listenAddrEnv = getenv("DISTPLUSPLUS_LISTEN_ADDRESS"); listenAddrEnv != nullptr) {
         ret.emplace_back(listenAddrEnv);
         return ret;
     }
 
-    const toml::array &serverArray = *configFile.get_as<toml::array>("servers");
-    for (const auto &server : serverArray) {
+    for (const toml::array &serverArray = *configFile.get_as<toml::array>("servers");
+         const auto &server : serverArray) {
         ret.push_back(server.as_string()->get());
     }
     if (ret.empty()) {
@@ -94,8 +91,7 @@ static std::int64_t getCompressionLevel(const toml::table &configFile) {
 }
 
 static bool getFallback(const toml::table &configFile) {
-    const char *fallbackEnv = getenv("DISTPLUSPLUS_FALLBACK");
-    if (fallbackEnv != nullptr) {
+    if (const char *fallbackEnv = getenv("DISTPLUSPLUS_FALLBACK"); fallbackEnv != nullptr) {
         const std::string fallbackEnvString = fallbackEnv;
         if (std::ranges::find(soundsLikeNo, fallbackEnvString) != soundsLikeNo.end()) {
             return false;

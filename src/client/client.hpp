@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/argsvec.hpp"
+#include "config.hpp"
 #include "distplusplus.grpc.pb.h"
 #include "distplusplus.pb.h"
 
@@ -19,12 +20,10 @@
 
 namespace distplusplus::client {
 
-namespace {
 struct Server {
     uint32_t currentLoad;
     std::string server;
 };
-} // namespace
 
 } // namespace distplusplus::client
 
@@ -45,7 +44,7 @@ public:
     ~Client() = default;
 
 private:
-    Client(std::string compilerName);
+    explicit Client(std::string compilerName);
 
     class QueryHelper;
     friend QueryHelper;
@@ -62,15 +61,15 @@ private:
     class QueryHelper final {
     private:
         Client *client;
-        std::filesystem::path dbPath;
-        lmdb::env env;
+        std::filesystem::path dbPath = config.stateDir().string() + "/queryDB/";
+        lmdb::env env = lmdb::env::create();
 
         void updateServer(lmdb::txn &wtxn, lmdb::dbi &dbi, const std::string &server,
                           const distplusplus::QueryAnswer &queryAnswer);
         static void removeServer(lmdb::txn &wtxn, lmdb::dbi &dbi, const std::string &server);
 
     public:
-        QueryHelper(Client *client);
+        explicit QueryHelper(Client *client);
         QueryHelper() = delete;
         QueryHelper(const QueryHelper &queryHelper) = delete;
         QueryHelper(QueryHelper &&queryHelper) = default;

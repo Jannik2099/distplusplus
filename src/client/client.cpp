@@ -36,8 +36,7 @@ constexpr bool ::std::less<distplusplus::client::Server>::operator()(
 
 namespace distplusplus::client {
 
-Client::QueryHelper::QueryHelper(Client *client)
-    : client(client), dbPath(config.stateDir().string() + "/queryDB/"), env(lmdb::env::create()) {}
+Client::QueryHelper::QueryHelper(Client *client) : client(client) {}
 
 // NOLINTNEXTLINE
 void Client::QueryHelper::init() {
@@ -148,6 +147,7 @@ void Client::QueryHelper::init() {
         }
         if (!exists) {
             BOOST_LOG_TRIVIAL(debug) << "registering server from config: " << server;
+            // waiting on https://reviews.llvm.org/D129531
             serverVector.push_back({0, server});
         } else {
             BOOST_LOG_TRIVIAL(debug) << "server found in config, but already registered from db: " << server;
