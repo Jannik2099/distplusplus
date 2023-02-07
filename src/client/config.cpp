@@ -4,6 +4,7 @@
 #include <array>
 #include <boost/log/trivial.hpp>
 #include <cstdlib>
+#include <gsl/narrow>
 
 namespace distplusplus::client {
 
@@ -60,6 +61,13 @@ static std::vector<std::string> getServers(const toml::table &configFile) {
     return ret;
 }
 
+static std::uint32_t getTimeout(const toml::table &configFile) {
+    if (const char *timeoutEnv = getenv("DISTPLUSPLUS_TIMEOUT"); timeoutEnv != nullptr) {
+        return gsl::narrow_cast<std::uint32_t>(std::atoll(timeoutEnv));
+    }
+    return configFile["timeout"].value_or<std::uint32_t>(10);
+}
+
 static distplusplus::CompressionType getCompressionType(const toml::table &configFile) {
     const char *compressionEnv = getenv("DISTPLUSPLUS_COMPRESS");
     std::string compressionString;
@@ -106,8 +114,8 @@ static bool getFallback(const toml::table &configFile) {
 // really should rework the initialization
 Config::Config()
     : _stateDir(getStateDir()), configFile(getConfigFile()), _servers(getServers(configFile)),
-      _compressionType(getCompressionType(configFile)), _compressionLevel(getCompressionLevel(configFile)),
-      _fallback(getFallback(configFile)) {
+      _reservationAttemptTimeout(getTimeout(configFile)), _compressionType(getCompressionType(configFile)),
+      _compressionLevel(getCompressionLevel(configFile)), _fallback(getFallback(configFile)) {
     if (_servers.empty()) {
         const std::string err_msg("config file " + *configFile.source().path +
                                   " provides empty list of hosts");
@@ -118,7 +126,7 @@ Config::Config()
 
 const std::vector<std::string> &Config::servers() const { return _servers; }
 const std::filesystem::path &Config::stateDir() const { return _stateDir; }
-const int &Config::reservationAttemptTimeout() const { return _reservationAttemptTimeout; }
+std::uint32_t Config::reservationAttemptTimeout() const { return _reservationAttemptTimeout; }
 distplusplus::CompressionType Config::compressionType() const { return _compressionType; }
 std::int64_t Config::compressionLevel() const { return _compressionLevel; }
 bool Config::fallback() const { return _fallback; }
