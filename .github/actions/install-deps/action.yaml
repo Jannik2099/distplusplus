@@ -4,7 +4,7 @@ on:
   workflow_call:
     outputs:
       llvm_version:
-        value: "14"
+        value: "15"
 
 runs:
   using: "composite"
@@ -19,7 +19,7 @@ runs:
       shell: bash
     - run: wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
       shell: bash
-    - run: sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-14 main"
+    - run: sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main"
       shell: bash
-    - run: sudo apt-get install -y clang-14 clang-tidy-14 lld-14 cmake ninja-build autoconf automake libtool make libmsgsl-dev libzstd1 libzstd-dev ccache liblmdb-dev liblmdb0 libboost-all-dev
+    - run: sudo apt-get install -y clang-15 clang-tidy-15 lld-15 libclang-rt-15-dev cmake ninja-build autoconf automake libtool make libmsgsl-dev libzstd1 libzstd-dev ccache liblmdb-dev liblmdb0 libboost-all-dev
       shell: bash
