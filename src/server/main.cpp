@@ -17,15 +17,17 @@
 
 using namespace distplusplus::server;
 
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static volatile std::sig_atomic_t signalFlag = 0;
+namespace {
 
-static void signalHandler(int signal) {
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+volatile std::sig_atomic_t signalFlag = 0;
+
+void signalHandler(int signal) {
     signalFlag = 1;
     std::signal(signal, signalHandler);
 }
 
-static void signalReaper(const std::stop_token &token, grpc::Server *server) {
+void signalReaper(const std::stop_token &token, grpc::Server *server) {
     std::signal(SIGINT, signalHandler);
     std::signal(SIGTERM, signalHandler);
     while (signalFlag == 0) {
@@ -36,6 +38,8 @@ static void signalReaper(const std::stop_token &token, grpc::Server *server) {
     }
     server->Shutdown();
 }
+
+} // namespace
 
 int main(int argc, char *argv[]) {
     const Config config = getConfig(std::span(argv, argc));

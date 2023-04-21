@@ -15,13 +15,15 @@
 
 namespace distplusplus::server {
 
+namespace {
+
 template <typename Type>
-static Type getFromEnv(const boost::program_options::variables_map &varMap, const char *confName,
-                       const char *envName);
+[[nodiscard]] Type getFromEnv(const boost::program_options::variables_map &varMap, const char *confName,
+                              const char *envName);
 
 template <>
-std::string getFromEnv(const boost::program_options::variables_map &varMap, const char *confName,
-                       const char *envName) {
+[[nodiscard]] std::string getFromEnv(const boost::program_options::variables_map &varMap,
+                                     const char *confName, const char *envName) {
     auto ret = varMap[confName].as<std::string>();
     if (const char *env = getenv(envName); env != nullptr) {
         BOOST_LOG_TRIVIAL(debug) << "config option " << confName << " overridden via env " << envName
@@ -32,8 +34,8 @@ std::string getFromEnv(const boost::program_options::variables_map &varMap, cons
 }
 
 template <>
-std::uint64_t getFromEnv(const boost::program_options::variables_map &varMap, const char *confName,
-                         const char *envName) {
+[[nodiscard]] std::uint64_t getFromEnv(const boost::program_options::variables_map &varMap,
+                                       const char *confName, const char *envName) {
     auto ret = varMap[confName].as<std::uint64_t>();
     if (const char *env = getenv(envName); env != nullptr) {
         errno = 0;
@@ -53,8 +55,8 @@ std::uint64_t getFromEnv(const boost::program_options::variables_map &varMap, co
 }
 
 template <>
-std::int64_t getFromEnv(const boost::program_options::variables_map &varMap, const char *confName,
-                        const char *envName) {
+[[nodiscard]] std::int64_t getFromEnv(const boost::program_options::variables_map &varMap,
+                                      const char *confName, const char *envName) {
     auto ret = varMap[confName].as<std::int64_t>();
     if (const char *env = getenv(envName); env != nullptr) {
         errno = 0;
@@ -72,6 +74,8 @@ std::int64_t getFromEnv(const boost::program_options::variables_map &varMap, con
     }
     return ret;
 }
+
+} // namespace
 
 Config getConfig(std::span<char *> argv) {
     const std::uint64_t coreCount = std::thread::hardware_concurrency();

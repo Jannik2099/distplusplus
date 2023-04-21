@@ -34,40 +34,49 @@ using distplusplus::common::ArgsVec;
 
 namespace distplusplus::server {
 
-namespace {
+namespace _internal {
 
 // NOLINTNEXTLINE(readability-identifier-length)
 bool ReservationCompare::operator()(const reservationType &a, const reservationType &b) const {
     return std::get<1>(a) < std::get<1>(b);
 }
+// NOLINTNEXTLINE(readability-identifier-length)
+bool ReservationCompare::operator()(const reservationTypeB &a, const reservationType &b) const {
+    return a < std::get<1>(b);
+}
+// NOLINTNEXTLINE(readability-identifier-length)
+bool ReservationCompare::operator()(const reservationType &a, const reservationTypeB &b) const {
+    return std::get<1>(a) < b;
+}
 
-} // namespace
+} // namespace _internal
 
-[[noreturn]] static void exceptionAbortHandler(const std::exception &exception) noexcept {
+namespace {
+
+[[noreturn]] void exceptionAbortHandler(const std::exception &exception) noexcept {
     const std::string typeName = boost::core::demangle(typeid(exception).name());
     BOOST_LOG_TRIVIAL(fatal) << "caught exception in gRPC function: " << typeName << " " << exception.what();
     std::terminate();
 }
 
-[[noreturn]] static void exceptionAbortHandler() noexcept {
+[[noreturn]] void exceptionAbortHandler() noexcept {
     BOOST_LOG_TRIVIAL(fatal) << "caught exception of unexpected type in gRPC function";
     std::terminate();
 }
 
 // TODO: finish
 
-static bool sanitizeFile(const distplusplus::File &file) {
-    const std::string &filename = file.name();
-    if (std::filesystem::path(filename).filename() == filename) {
+[[nodiscard]] bool sanitizeFile(const distplusplus::File &file) {
+    const std::filesystem::path filename = file.name();
+    if (filename.filename() == filename) {
         return true;
     }
     BOOST_LOG_TRIVIAL(warning) << "rejected file " << filename << " due to malformed name";
     return false;
 }
 
-static bool sanitizeRequest(const distplusplus::CompileRequest &request) {
-    const std::string &compiler = request.compiler();
-    if (std::filesystem::path(compiler).filename() != compiler) {
+[[nodiscard]] bool sanitizeRequest(const distplusplus::CompileRequest &request) {
+    if (const std::filesystem::path compiler = request.compiler(); compiler.filename() != compiler) {
         BOOST_LOG_TRIVIAL(warning) << "rejected requested compiler " << compiler
                                    << " as it does not look like a basename";
         return false;
@@ -77,7 +86,7 @@ static bool sanitizeRequest(const distplusplus::CompileRequest &request) {
 
 // This does not check for dir privileges and doing so would implement many TOCTOU pitfalls
 // However we can assume that /usr is only modifiable by root
-static bool checkCompilerAllowed(const std::string &compiler) {
+[[nodiscard]] bool checkCompilerAllowed(const std::string &compiler) {
     const std::function<bool(const std::filesystem::directory_entry &)> checkIfSymlink =
         [&compiler](const auto &file) {
             if (file.is_symlink() && compiler == file.path().filename()) {
@@ -101,15 +110,17 @@ static bool checkCompilerAllowed(const std::string &compiler) {
     return ret1 || ret2;
 }
 
+} // namespace
+
 void Server::reservationReaper() {
     const std::stop_token token = reservationReaperThread.get_stop_token();
     while (!token.stop_requested()) {
-        const reservationTypeB timestamp = std::chrono::system_clock::now();
+        const _internal::reservationTypeB timestamp = std::chrono::system_clock::now();
         std::this_thread::sleep_for(std::chrono::seconds(reservationTimeout));
         {
             std::lock_guard lockGuard(reservationLock);
             const auto before = reservations.size();
-            const auto bound = reservations.lower_bound(std::pair("", timestamp));
+            const auto bound = reservations.lower_bound(timestamp);
             reservations.erase(reservations.begin(), bound);
             const auto after = reservations.size();
             const auto diff = before - after;
@@ -140,8 +151,7 @@ grpc::Status Server::Query(grpc::ServerContext *context, const distplusplus::Ser
         }
         answer->set_compilersupported(true);
 
-        std::array<double, 1> loadarr = {0};
-        if (getloadavg(loadarr.data(), 1) != 1) {
+        if (std::array<double, 1> loadarr = {0}; getloadavg(loadarr.data(), 1) != 1) {
             BOOST_LOG_TRIVIAL(error) << "failed to get load average for client " << clientIP;
             answer->set_currentload(0);
         } else {
@@ -190,12 +200,11 @@ grpc::Status Server::Reserve(grpc::ServerContext *context, const distplusplus::R
         if (jobsRunning < jobsMax) {
             jobsCur = jobsRunning.load();
             if (std::atomic_compare_exchange_strong(&jobsRunning, &jobsCur, jobsCur + 1)) {
-                common::ScopeGuard jobCountGuard([&]() { jobsRunning--; });
+                common::ScopeGuard jobCountGuard([this]() { jobsRunning--; });
                 const std::string uuid = boost::uuids::to_string(boost::uuids::random_generator()());
                 {
                     std::lock_guard lockGuard(reservationLock);
-                    reservations.emplace_hint(reservations.end(),
-                                              std::pair(uuid, std::chrono::system_clock::now()));
+                    reservations.emplace_hint(reservations.end(), uuid, std::chrono::system_clock::now());
                 }
                 answer->set_uuid(uuid);
                 answer->set_success(true);
@@ -227,7 +236,7 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
                                  << "cwd: " << request->cwd();
         {
             std::lock_guard lockGuard(reservationLock);
-            if (std::erase_if(reservations, [&clientUUID](const reservationType &comp) {
+            if (std::erase_if(reservations, [&clientUUID](const _internal::reservationType &comp) {
                     return std::get<0>(comp) == clientUUID;
                 }) == 0) {
                 const std::string errorMessage = "error: uuid " + clientUUID + " not in reservation list.";
@@ -236,7 +245,7 @@ grpc::Status Server::Distribute(grpc::ServerContext *context, const distplusplus
                 return {grpc::StatusCode::FAILED_PRECONDITION, errorMessage};
             }
         }
-        common::ScopeGuard jobCountGuard([&]() { jobsRunning--; });
+        common::ScopeGuard jobCountGuard([this]() { jobsRunning--; });
 
         // TODO: do this proper
         if (!sanitizeRequest(*request)) {

@@ -12,10 +12,10 @@ namespace distplusplus::server::parser {
 
 class CannotProcessSignal final {
 private:
-    const std::string error;
+    std::string error;
 
 public:
-    CannotProcessSignal(std::string error) : error(std::move(error)) {}
+    explicit CannotProcessSignal(std::string error) : error(std::move(error)) {}
     [[nodiscard]] const std::string &what() const { return error; }
 };
 

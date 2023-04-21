@@ -19,7 +19,7 @@
 
 namespace distplusplus::server {
 
-namespace {
+namespace _internal {
 
 using reservationTypeA = std::string;
 using reservationTypeB = std::chrono::time_point<std::chrono::system_clock>;
@@ -27,36 +27,39 @@ using reservationType = std::pair<reservationTypeA, reservationTypeB>;
 
 class ReservationCompare final {
 public:
+    using is_transparent = void;
     // NOLINTNEXTLINE(readability-identifier-length)
-    bool operator()(const reservationType &a, const reservationType &b) const;
+    [[nodiscard]] bool operator()(const reservationType &a, const reservationType &b) const;
     // NOLINTNEXTLINE(readability-identifier-length)
-    bool operator()(const reservationTypeB &a, const reservationType &b) const;
+    [[nodiscard]] bool operator()(const reservationTypeB &a, const reservationType &b) const;
+    // NOLINTNEXTLINE(readability-identifier-length)
+    [[nodiscard]] bool operator()(const reservationType &a, const reservationTypeB &b) const;
 };
 
-} // namespace
+} // namespace _internal
 
 class Server final : public distplusplus::CompilationServer::Service {
 private:
     void reservationReaper();
-    const distplusplus::common::CompressorFactory compressorFactory;
-    const std::uint64_t jobsMax;
-    const std::uint64_t reservationTimeout;
+    distplusplus::common::CompressorFactory compressorFactory;
+    std::uint64_t jobsMax;
+    std::uint64_t reservationTimeout;
     std::atomic<std::uint64_t> jobsRunning = 0;
-    std::multiset<reservationType, ReservationCompare> reservations;
+    std::multiset<_internal::reservationType, _internal::ReservationCompare> reservations;
     std::mutex reservationLock;
     std::jthread reservationReaperThread = std::jthread(&Server::reservationReaper, this);
 
 public:
     grpc::Status Query(grpc::ServerContext *context, const distplusplus::ServerQuery *query,
-                       distplusplus::QueryAnswer *answer) final;
+                       distplusplus::QueryAnswer *answer) override;
     grpc::Status Reserve(grpc::ServerContext *context, const distplusplus::Reservation *reservation,
-                         distplusplus::ReservationAnswer *answer) final;
+                         distplusplus::ReservationAnswer *answer) override;
     grpc::Status Distribute(grpc::ServerContext *context, const distplusplus::CompileRequest *request,
-                            distplusplus::CompileAnswer *answer) final;
+                            distplusplus::CompileAnswer *answer) override;
     Server() = delete;
     Server(std::uint64_t maxJobs, std::uint64_t reservationTimeout,
            distplusplus::common::CompressorFactory compressorFactory);
-    ~Server() final = default;
+    ~Server() override = default;
     Server(const Server &) = delete;
     Server(Server &&) = delete;
     Server operator=(const Server &) = delete;
