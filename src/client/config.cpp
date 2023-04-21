@@ -8,10 +8,12 @@
 
 namespace distplusplus::client {
 
-static constexpr std::array soundsLikeNo = {"0", "NO", "no", "OFF", "off"};
-static constexpr std::array soundsLikeYes = {"1", "YES", "yes", "ON", "on"};
+namespace {
 
-static std::filesystem::path getStateDir() {
+constexpr std::array soundsLikeNo = {"0", "NO", "no", "OFF", "off"};
+constexpr std::array soundsLikeYes = {"1", "YES", "yes", "ON", "on"};
+
+std::filesystem::path getStateDir() {
     std::filesystem::path ret;
     if (char *var = getenv("DISTPLUSPLUS_STATE_DIR"); var != nullptr) {
         ret = var;
@@ -26,7 +28,7 @@ static std::filesystem::path getStateDir() {
     return ret;
 }
 
-static toml::table getConfigFile() {
+toml::table getConfigFile() {
     std::filesystem::path ret;
     if (char *var = getenv("DISTPLUSPLUS_CONFIG_FILE"); var != nullptr) {
         ret = var;
@@ -41,7 +43,7 @@ static toml::table getConfigFile() {
     return toml::parse_file(std::string(ret));
 }
 
-static std::vector<std::string> getServers(const toml::table &configFile) {
+std::vector<std::string> getServers(const toml::table &configFile) {
     std::vector<std::string> ret;
 
     if (const char *listenAddrEnv = getenv("DISTPLUSPLUS_LISTEN_ADDRESS"); listenAddrEnv != nullptr) {
@@ -61,14 +63,14 @@ static std::vector<std::string> getServers(const toml::table &configFile) {
     return ret;
 }
 
-static std::uint32_t getTimeout(const toml::table &configFile) {
+std::uint32_t getTimeout(const toml::table &configFile) {
     if (const char *timeoutEnv = getenv("DISTPLUSPLUS_TIMEOUT"); timeoutEnv != nullptr) {
         return gsl::narrow_cast<std::uint32_t>(std::atoll(timeoutEnv));
     }
     return configFile["timeout"].value_or<std::uint32_t>(10);
 }
 
-static distplusplus::CompressionType getCompressionType(const toml::table &configFile) {
+distplusplus::CompressionType getCompressionType(const toml::table &configFile) {
     const char *compressionEnv = getenv("DISTPLUSPLUS_COMPRESS");
     std::string compressionString;
     if (compressionEnv != nullptr) {
@@ -87,7 +89,7 @@ static distplusplus::CompressionType getCompressionType(const toml::table &confi
     throw std::runtime_error(err_msg);
 }
 
-static std::int64_t getCompressionLevel(const toml::table &configFile) {
+std::int64_t getCompressionLevel(const toml::table &configFile) {
     const char *compressionLevelEnv = getenv("DISTPLUSPLUS_COMPRESSION_LEVEL");
     std::int64_t compressionLevel = 0;
     if (compressionLevelEnv != nullptr) {
@@ -98,7 +100,7 @@ static std::int64_t getCompressionLevel(const toml::table &configFile) {
     return compressionLevel;
 }
 
-static bool getFallback(const toml::table &configFile) {
+bool getFallback(const toml::table &configFile) {
     if (const char *fallbackEnv = getenv("DISTPLUSPLUS_FALLBACK"); fallbackEnv != nullptr) {
         const std::string fallbackEnvString = fallbackEnv;
         if (std::ranges::find(soundsLikeNo, fallbackEnvString) != soundsLikeNo.end()) {
@@ -110,6 +112,8 @@ static bool getFallback(const toml::table &configFile) {
     }
     return configFile["fallback"].value_or(true);
 }
+
+} // namespace
 
 // really should rework the initialization
 Config::Config()

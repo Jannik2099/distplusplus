@@ -34,9 +34,11 @@ using distplusplus::common::ArgsVec;
 using distplusplus::common::BoundsSpan;
 using distplusplus::common::ProcessHelper;
 
+namespace {
+
 // Whoever the fuck designed C / POSIX IO and thought "yeah this is good" should be tied for digital war
 // crimes and thrown in the Sarlacc pit
-static bool stdin_empty() {
+bool stdin_empty() {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
     char buf[1];
 
@@ -60,7 +62,7 @@ static bool stdin_empty() {
     return false;
 }
 
-static int func(ArgsSpan argv) { // NOLINT(readability-function-cognitive-complexity)
+int func(ArgsSpan argv) { // NOLINT(readability-function-cognitive-complexity)
     if (argv.size() == 1 && std::filesystem::path(argv[0]).stem() == "distplusplus") {
         BOOST_LOG_TRIVIAL(error) << "distplusplus invoked without any arguments";
         return -1;
@@ -161,6 +163,8 @@ static int func(ArgsSpan argv) { // NOLINT(readability-function-cognitive-comple
     BOOST_LOG_TRIVIAL(trace) << "remote invocation returned " << std::to_string(answer.returncode());
     return answer.returncode();
 }
+
+} // namespace
 
 // NOLINTNEXTLINE(bugprone-exception-escape, readability-function-cognitive-complexity)
 int main(int argc, char *argv[]) {

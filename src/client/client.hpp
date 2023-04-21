@@ -78,7 +78,7 @@ private:
         ~QueryHelper() = default;
 
         void init();
-        std::string getCandidate();
+        [[nodiscard]] std::string getCandidate();
 
         friend Client::Client(Client &&) noexcept;
         friend Client &Client::operator=(Client &&) noexcept;
@@ -88,8 +88,8 @@ private:
     friend Client ClientFactory(const std::string &compilerName);
 
 public:
-    CompileAnswer send(ArgsSpan args, const std::string &fileName, std::string_view fileContent,
-                       const std::string &cwd);
+    [[nodiscard]] CompileAnswer send(ArgsSpan args, const std::string &fileName, std::string_view fileContent,
+                                     const std::string &cwd);
 };
 
 Client ClientFactory(const std::string &compilerName);

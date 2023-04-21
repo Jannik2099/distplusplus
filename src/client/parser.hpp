@@ -55,11 +55,11 @@ public:
 
 class ParserError final : public std::exception {
 private:
-    const std::string message;
+    std::string message;
 
 public:
-    ParserError(std::string message) noexcept;
-    [[nodiscard]] const char *what() const noexcept final;
+    explicit ParserError(std::string message) noexcept;
+    [[nodiscard]] const char *what() const noexcept override;
 };
 
 } // namespace distplusplus::client::parser
