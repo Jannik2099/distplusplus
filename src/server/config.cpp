@@ -77,7 +77,7 @@ template <>
 
 } // namespace
 
-Config getConfig(std::span<char *> argv) {
+Config getConfig(gsl::span<char *> argv) {
     const std::uint64_t coreCount = std::thread::hardware_concurrency();
     if (coreCount == 0) {
         BOOST_LOG_TRIVIAL(fatal) << "failed to detect number of cores";

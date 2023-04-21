@@ -3,7 +3,7 @@
 #include "distplusplus.pb.h"
 
 #include <cstdint>
-#include <span>
+#include <gsl/span>
 #include <string>
 
 namespace distplusplus::server {
@@ -17,6 +17,6 @@ struct Config {
 };
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
-[[nodiscard]] Config getConfig(std::span<char *> argv);
+[[nodiscard]] Config getConfig(gsl::span<char *> argv);
 
 } // namespace distplusplus::server

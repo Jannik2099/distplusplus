@@ -15,12 +15,12 @@
 #include <fcntl.h>
 #include <filesystem>
 #include <fstream>
+#include <gsl/span>
 #include <iostream>
 #include <iterator>
 #include <list>
 #include <memory>
 #include <optional>
-#include <span>
 #include <sstream>
 #include <string>
 #include <unistd.h>
@@ -31,7 +31,6 @@ using namespace distplusplus::client;
 using distplusplus::common::Arg;
 using distplusplus::common::ArgsSpan;
 using distplusplus::common::ArgsVec;
-using distplusplus::common::BoundsSpan;
 using distplusplus::common::ProcessHelper;
 
 namespace {
@@ -170,7 +169,7 @@ int func(ArgsSpan argv) { // NOLINT(readability-function-cognitive-complexity)
 int main(int argc, char *argv[]) {
     distplusplus::common::initBoostLogging();
     ArgsVec argsVec;
-    for (char *arg : BoundsSpan(argv, argc)) {
+    for (char *arg : gsl::span(argv, argc)) {
         argsVec.emplace_back(Arg::fromExternal(arg));
     }
     ArgsSpan argsSpan(argsVec);
@@ -209,7 +208,8 @@ int main(int argc, char *argv[]) {
         }
 
         const auto cin = stdin_empty() ? "" : std::string(std::istreambuf_iterator<char>(std::cin), {});
-        ArgsSpan compilerArgs(argsSpan.begin() + compilerPos + 1, argsSpan.end());
+        ArgsSpan compilerArgs(std::to_address(argsSpan.begin() + compilerPos + 1),
+                              std::to_address(argsSpan.end()));
         ProcessHelper localInvocation(compilerPath, compilerArgs, cin);
         std::cerr << localInvocation.get_stderr();
         std::cout << localInvocation.get_stdout();

@@ -11,8 +11,8 @@
 #include <grpcpp/security/server_credentials.h>
 #include <grpcpp/server.h>
 #include <grpcpp/server_builder.h>
+#include <gsl/span>
 #include <memory>
-#include <span>
 #include <thread>
 
 using namespace distplusplus::server;
@@ -42,7 +42,7 @@ void signalReaper(const std::stop_token &token, grpc::Server *server) {
 } // namespace
 
 int main(int argc, char *argv[]) {
-    const Config config = getConfig(std::span(argv, argc));
+    const Config config = getConfig(gsl::span(argv, argc));
 
     const distplusplus::common::CompressorFactory compressorFactory(config.compressionType,
                                                                     config.compressionLevel);

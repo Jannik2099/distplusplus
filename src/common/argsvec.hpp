@@ -1,7 +1,7 @@
 #pragma once
 
-#include "bounds_span.hpp"
-
+#include <gsl/span>
+#include <iterator>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -18,7 +18,8 @@ private:
 
 public:
     template <class... Args>
-    Arg(Args... args) : data(std::make_shared<const std::string>(std::forward<Args>(args)...)) {
+    explicit(false) Arg(Args... args)
+        : data(std::make_shared<const std::string>(std::forward<Args>(args)...)) {
         using intuple = std::tuple<Args...>;
         if constexpr (std::tuple_size<intuple>::value > 0) {
             using intype = std::remove_cvref_t<std::tuple_element_t<0, std::tuple<Args...>>>;
@@ -27,19 +28,19 @@ public:
         }
     }
 
-    static Arg fromExternal(char *str) {
+    [[nodiscard]] static Arg fromExternal(char *str) {
         Arg ret;
         ret.data = str;
         return ret;
     }
 
-    operator std::string_view() const {
+    [[nodiscard]] explicit(false) operator std::string_view() const {
         if (data.index() == 0) {
             return std::get<0>(data);
         }
         return *std::get<1>(data);
     }
-    operator std::string() const {
+    [[nodiscard]] explicit(false) operator std::string() const {
         if (data.index() == 0) {
             return std::get<0>(data);
         }
@@ -56,12 +57,12 @@ public:
 
 class ArgsVec final : public std::vector<Arg> {
 private:
-    using ArgsSpan = BoundsSpan<const ArgsVec::value_type>;
+    using ArgsSpan = gsl::span<const ArgsVec::value_type>;
     using Base = std::vector<Arg>;
 
 public:
     // no idea why I have to explicitly declare this
-    ArgsVec(std::initializer_list<ArgsVec::value_type> init) {
+    explicit(false) ArgsVec(std::initializer_list<ArgsVec::value_type> init) {
         reserve(init.size());
         for (const Arg &arg : init) {
             emplace_back(arg);
@@ -77,9 +78,11 @@ public:
 
     template <class InputIt> ArgsVec(InputIt first, InputIt last) : Base(first, last) {}
 
-    operator ArgsSpan() const noexcept { return {cbegin(), cend()}; }
+    [[nodiscard]] explicit(false) operator ArgsSpan() const noexcept {
+        return {std::to_address(cbegin()), size()};
+    }
 };
 
-using ArgsSpan = BoundsSpan<const ArgsVec::value_type>;
+using ArgsSpan = gsl::span<const ArgsVec::value_type>;
 
 } // namespace distplusplus::common

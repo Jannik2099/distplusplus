@@ -7,7 +7,6 @@
 #include <grpcpp/support/status_code_enum.h>
 #include <memory>
 #include <optional>
-#include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>

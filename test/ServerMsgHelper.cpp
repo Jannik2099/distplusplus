@@ -8,6 +8,7 @@
 #include <grpc/grpc.h>
 #include <grpcpp/create_channel.h>
 #include <grpcpp/security/credentials.h>
+#include <gsl/span>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -17,7 +18,7 @@ int main(int argc, char *argv[]) {
         std::cerr << "ServerMsgHelper: incorrect usage: expected 2 args but got " << argc - 1 << std::endl;
         return 1;
     }
-    distplusplus::common::BoundsSpan args(argv, argc);
+    gsl::span args(argv, argc);
     std::string messageType = args[1];
     std::string messageContent = args[2];
 
