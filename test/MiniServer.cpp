@@ -63,7 +63,7 @@ public:
                             distplusplus::CompileAnswer *answer) final {
         const std::string &uuid = request->uuid();
         const auto iter = std::ranges::find(uuidList, uuid);
-        if (iter != uuidList.end()) {
+        if (iter == uuidList.end()) {
             return {grpc::StatusCode::FAILED_PRECONDITION, "uuid " + uuid + " not in reservation list"};
         }
         uuidList.erase(iter);
@@ -113,17 +113,16 @@ public:
         return grpc::Status::OK;
     }
 };
-} // namespace
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static volatile std::sig_atomic_t signalFlag = 0;
+volatile std::sig_atomic_t signalFlag = 0;
 
-static void signalHandler(int signal) {
+void signalHandler(int signal) {
     signalFlag = 1;
     std::signal(signal, signalHandler);
 }
 
-static void signalReaper(const std::stop_token &token, grpc::Server *server) {
+void signalReaper(const std::stop_token &token, grpc::Server *server) {
     std::signal(SIGINT, signalHandler);
     std::signal(SIGTERM, signalHandler);
     while (signalFlag == 0) {
@@ -134,6 +133,8 @@ static void signalReaper(const std::stop_token &token, grpc::Server *server) {
     }
     server->Shutdown();
 }
+
+} // namespace
 
 int main() {
     char *listenAddr = getenv("DISTPLUSPLUS_LISTEN_ADDRESS");
