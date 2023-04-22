@@ -136,8 +136,7 @@ int func(ArgsSpan argv) { // NOLINT(readability-function-cognitive-complexity)
     const distplusplus::common::Compressor compressor(config.compressionType(), config.compressionLevel(),
                                                       Preprocessor.get_stdout());
 
-    const std::string &preprocessorStderr = Preprocessor.get_stderr();
-    if (!preprocessorStderr.empty()) {
+    if (const std::string &preprocessorStderr = Preprocessor.get_stderr(); !preprocessorStderr.empty()) {
         std::cerr << preprocessorStderr;
     }
     if (Preprocessor.returnCode() != 0) {
@@ -180,7 +179,7 @@ int main(int argc, char *argv[]) {
             throw FallbackSignal();
         }
         ret = func(argsSpan);
-    } catch (FallbackSignal) {
+    } catch (FallbackSignal &) {
         if (!config.fallback()) {
             BOOST_LOG_TRIVIAL(error) << "failed to distribute and local fallback is disabled, exiting";
             return -1;
@@ -208,8 +207,7 @@ int main(int argc, char *argv[]) {
         }
 
         const auto cin = stdin_empty() ? "" : std::string(std::istreambuf_iterator<char>(std::cin), {});
-        ArgsSpan compilerArgs(std::to_address(argsSpan.begin() + compilerPos + 1),
-                              std::to_address(argsSpan.end()));
+        ArgsSpan compilerArgs = argsSpan.subspan(compilerPos + 1);
         ProcessHelper localInvocation(compilerPath, compilerArgs, cin);
         std::cerr << localInvocation.get_stderr();
         std::cout << localInvocation.get_stdout();
